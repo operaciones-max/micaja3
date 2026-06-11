@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { SIN_FILTRO } from "@/lib/filter-select";
 import { formatCOP, formatDateDDMMYYYY, parseCOPString, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { uploadFileToStorage } from "@/lib/upload-client";
 
 type EnvioRow = Record<string, unknown>;
 
@@ -203,22 +204,19 @@ export function EnviosCoordinadorClient({
       responsable.trim() || uploadResponsableFallback || sessionResponsable || "coordinador";
 
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("sector", sectorUpload);
-      form.append("responsable", responsableUpload);
-      form.append("fecha", fecha);
-      form.append("destino", "envios");
-
-      const uploadRes = await fetch("/api/facturas/upload", { method: "POST", body: form });
-      if (!uploadRes.ok) {
-        const j = (await uploadRes.json().catch(() => ({}))) as { error?: string };
-        setOkMsg(String(j.error || "No se pudo subir el comprobante"));
-        return;
-      }
-      const { url } = (await uploadRes.json()) as { url?: string };
-      if (!url) {
-        setOkMsg("Drive no devolvió URL");
+      let url: string;
+      try {
+        const result = await uploadFileToStorage(file, {
+          mime: file.type,
+          size: file.size,
+          sector: sectorUpload,
+          responsable: responsableUpload,
+          fecha,
+          destino: "envios",
+        });
+        url = result.url;
+      } catch (e) {
+        setOkMsg(e instanceof Error ? e.message : "No se pudo subir el comprobante");
         return;
       }
       setComprobanteUrl(url);

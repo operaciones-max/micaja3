@@ -23,6 +23,7 @@ import {
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
 import { isFechaFacturaFutura, parseFechaFacturaDDMMYYYY } from "@/lib/nueva-factura-validation";
+import { uploadFileToStorage } from "@/lib/upload-client";
 
 /** DD/MM/YYYY → YYYY-MM-DD (input type="date") */
 function toInputDate(ddmmyyyy: string): string {
@@ -288,24 +289,13 @@ export default function NuevaFacturaPage() {
         fileToProcess = base64ToFile(pages[0], file.name.replace(/\.pdf$/i, ".jpg"));
       }
 
-      const formUp = new FormData();
-      formUp.append("file", fileToProcess);
-      formUp.append("sector", sessionSector);
-      formUp.append("responsable", responsableTarget || String(user?.responsable || ""));
-      if (fecha.trim()) formUp.append("fecha", fecha.trim());
-
-      const upRes = await fetch("/api/facturas/upload", {
-        method: "POST",
-        body: formUp,
+      const { url, fileId: fid } = await uploadFileToStorage(fileToProcess, {
+        mime: fileToProcess.type,
+        size: fileToProcess.size,
+        sector: sessionSector,
+        responsable: responsableTarget || String(user?.responsable || ""),
+        ...(fecha.trim() ? { fecha: fecha.trim() } : {}),
       });
-      const upJson = await upRes.json().catch(() => ({}));
-      if (!upRes.ok) {
-        throw new Error(upJson.error || "Error al subir imagen. Intenta de nuevo.");
-      }
-
-      const url = String(upJson.url || "");
-      const fid = String(upJson.fileId || "");
-      if (!url || !fid) throw new Error("Respuesta de subida incompleta.");
 
       setImagenUrl(url);
       setDriveFileId(fid);

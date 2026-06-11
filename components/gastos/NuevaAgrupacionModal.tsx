@@ -12,6 +12,7 @@ import { FirmaCanvas } from "@/components/firma-canvas";
 import { pdf } from "@react-pdf/renderer";
 import { GastosGruposPdf } from "@/components/pdf/GastosGruposPdf";
 import { formatCOP } from "@/lib/format";
+import { uploadFileToStorage } from "@/lib/upload-client";
 import { Loader2, Trash2, Upload } from "lucide-react";
 import { pdfToJpgPages } from "@/lib/pdf-to-jpg";
 
@@ -222,13 +223,19 @@ export default function NuevaAgrupacionModal({
         />
       ).toBlob();
 
-      const formData = new FormData();
-      formData.append("file", new File([blob], `Gastos_${createJson.id}.pdf`, { type: "application/pdf" }));
-      formData.append("responsable", responsable);
-      formData.append("sector", sector || "Bogota");
-      const uploadRes = await fetch("/api/facturas/upload", { method: "POST", body: formData });
-      const uploadJson = (await uploadRes.json().catch(() => ({}))) as { url?: string; error?: string };
-      if (!uploadRes.ok || !uploadJson.url) { alert(uploadJson.error || "No se pudo subir PDF"); return; }
+      let uploadJson: { url: string };
+      try {
+        const result = await uploadFileToStorage(blob, {
+          mime: "application/pdf",
+          size: blob.size,
+          responsable,
+          sector: sector || "Bogota",
+        });
+        uploadJson = { url: result.url };
+      } catch (e) {
+        alert(e instanceof Error ? e.message : "No se pudo subir PDF");
+        return;
+      }
 
       await fetch(`/api/gastos-grupos/${encodeURIComponent(createJson.id)}`, {
         method: "PATCH",

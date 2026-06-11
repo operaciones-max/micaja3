@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Camera, Upload, Check, AlertCircle } from "lucide-react";
 import { formatDateDDMMYYYY } from "@/lib/format";
+import { uploadFileToStorage } from "@/lib/upload-client";
 
 export interface OcrResult {
   num_factura: string | null;
@@ -87,19 +88,13 @@ export function FacturaUploadOcr({
       setOcrStatus("uploading");
 
       try {
-        const formUp = new FormData();
-        formUp.append("file", file);
-        formUp.append("sector", mapped);
-        formUp.append("responsable", responsable.trim());
-        if (fechaCarpeta?.trim()) formUp.append("fecha", fechaCarpeta.trim());
-
-        const upRes = await fetch("/api/facturas/upload", { method: "POST", body: formUp });
-        const upJson = await upRes.json().catch(() => ({}));
-        if (!upRes.ok) throw new Error(upJson.error || "Error al subir a Drive");
-
-        const url = String(upJson.url || "");
-        const fileId = String(upJson.fileId || "");
-        if (!url || !fileId) throw new Error("Respuesta de subida incompleta");
+        const { url, fileId } = await uploadFileToStorage(file, {
+          mime: file.type,
+          size: file.size,
+          sector: mapped,
+          responsable: responsable.trim(),
+          ...(fechaCarpeta?.trim() ? { fecha: fechaCarpeta.trim() } : {}),
+        });
 
         setOcrStatus("reading");
         const ocrRes = await fetch("/api/ocr/factura", {

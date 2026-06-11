@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Upload } from "lucide-react";
 import { pdfToJpgPages } from "@/lib/pdf-to-jpg";
+import { uploadFileToStorage } from "@/lib/upload-client";
 
 export interface OcrDataExtracted {
   proveedor: string | null;
@@ -89,18 +90,18 @@ export default function AgregarFacturaModal({
         }
 
         // OCR y upload a Storage en paralelo
-        const uploadForm = new FormData();
-        uploadForm.append("file", file);
-        uploadForm.append("responsable", responsable);
-        uploadForm.append("destino", "gastos");
-
-        const [ocrRes, uploadRes] = await Promise.all([
+        const [ocrRes, uploadResult] = await Promise.all([
           fetch("/api/ia/ocr", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ imageBase64, mimeType }),
           }),
-          fetch("/api/facturas/upload", { method: "POST", body: uploadForm }),
+          uploadFileToStorage(file, {
+            mime: file.type,
+            size: file.size,
+            responsable,
+            destino: "gastos",
+          }).catch(() => null),
         ]);
 
         if (!ocrRes.ok) {
@@ -118,10 +119,7 @@ export default function AgregarFacturaModal({
           throw new Error(ocrJson.error || "No se extrajeron datos");
         }
 
-        if (uploadRes.ok) {
-          const upJson = (await uploadRes.json().catch(() => ({}))) as { url?: string };
-          if (upJson.url) setVoucherUrl(upJson.url);
-        }
+        if (uploadResult?.url) setVoucherUrl(uploadResult.url);
 
         setOcrData(ocrJson.data);
         setStep("edit");
