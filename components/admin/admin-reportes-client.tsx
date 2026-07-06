@@ -63,10 +63,11 @@ function adjuntoVistaSrc(f: FacturaPdf): string | null {
 function urlParaProxyFactura(f: FacturaPdf): string | null {
   const u = f.imagenUrl?.trim();
   if (u?.startsWith("data:")) return null;
-  if (u && (u.startsWith("http://") || u.startsWith("https://"))) {
-    if (u.includes("drive.google.com") || u.includes("googleusercontent.com")) return u;
-    return null;
-  }
+  // Cualquier URL http(s) se baja por el proxy para poder recomprimirla antes
+  // de incrustarla en el PDF (Supabase, Drive, googleusercontent, etc.). El
+  // proxy valida el host permitido; si no lo permite, responde 403 y se
+  // conserva la imagen original tal cual.
+  if (u && (u.startsWith("http://") || u.startsWith("https://"))) return u;
   const id = f.driveFileId?.trim();
   if (id) return `https://drive.google.com/uc?id=${id}`;
   return null;
@@ -126,7 +127,8 @@ async function resolveFacturaImages(facturas: FacturaPdf[]): Promise<FacturaPdf[
           const res = await fetch(`/api/proxy-imagen-base64?url=${encodeURIComponent(target)}`);
           if (res.ok) {
             const j = (await res.json()) as { dataUrl?: string };
-            if (j.dataUrl) dataUrl = j.dataUrl;
+            // Solo recomprimimos imágenes; si no lo es, se conserva f tal cual.
+            if (j.dataUrl?.startsWith("data:image/")) dataUrl = j.dataUrl;
           }
         } catch {
           /* mantener f tal cual */
