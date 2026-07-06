@@ -73,16 +73,18 @@ function urlParaProxyFactura(f: FacturaPdf): string | null {
 }
 
 /**
- * Recomprime una data URL solo si la imagen es mucho más grande de lo
- * que se necesita para leerla en el PDF. El upload va directo a Supabase
- * Storage, así que privilegiamos calidad de las facturas.
+ * Recomprime una data URL para que el PDF final no exceda el límite de
+ * Supabase Storage (~50 MB). Compresión moderada: se mantiene resolución
+ * suficiente para leer el número de factura y el NIT (privilegiamos
+ * resolución, que es lo que afecta al texto pequeño) y se baja sobre todo
+ * la calidad JPEG (que afecta menos a la legibilidad del texto).
  */
 async function compressDataUrlImage(
   dataUrl: string,
   opts: { maxDim?: number; quality?: number } = {}
 ): Promise<string> {
-  const maxDim = opts.maxDim ?? 3000;
-  const quality = opts.quality ?? 0.92;
+  const maxDim = opts.maxDim ?? 2000;
+  const quality = opts.quality ?? 0.72;
   if (!dataUrl.startsWith("data:image/")) return dataUrl;
   // PDFs convertidos a imagen por el proxy ya vienen como image/*; los dejamos.
   return new Promise<string>((resolve) => {
