@@ -218,7 +218,6 @@ export function AdminReportesClient() {
 
   async function confirmarFirmaAdmin() {
     if (!activo || !firmaAdmin.trim()) return;
-    console.log("[admin firma] build: hi-quality-images-v2");
     setProcesando(true);
     setErrorMsg("");
     setSuccessMsg("");
@@ -248,7 +247,6 @@ export function AdminReportesClient() {
       const generadoTxt = new Date().toLocaleDateString("es-CO");
 
       const rawFacturas = String(activo.Facturas_IDs || activo.FacturasIds || "[]").trim();
-      console.log("[admin firma] Facturas_IDs raw:", activo.Facturas_IDs);
 
       let facturasPdf: FacturaPdf[] = [];
 
@@ -257,7 +255,6 @@ export function AdminReportesClient() {
         if (parsedUnknown === null || !Array.isArray(parsedUnknown) || parsedUnknown.length === 0) {
           facturasPdf = facturasDelReporteLocal(activo);
         } else if (typeof parsedUnknown[0] === "string") {
-          console.log("[admin firma] Solo IDs, cargando facturas...");
           const responses = await Promise.all(
             (parsedUnknown as string[]).map((id) =>
               fetch(`/api/facturas/${encodeURIComponent(id)}`)
@@ -286,20 +283,8 @@ export function AdminReportesClient() {
         facturasPdf = facturasDelReporteLocal(activo);
       }
 
-      console.log("[admin firma] Facturas parseadas:", facturasPdf.length, facturasPdf);
-
       stage = "resolviendo imágenes";
       const facturasConImagenes = await resolveFacturaImages(facturasPdf);
-      const pesoEstimado = facturasConImagenes.reduce((acc, f) => {
-        const u = f.imagenUrl || "";
-        return acc + (u.startsWith("data:") ? Math.round((u.length * 3) / 4) : 0);
-      }, 0);
-      console.log(
-        "[admin firma] imágenes resueltas:",
-        facturasConImagenes.length,
-        "peso estimado total:",
-        `${(pesoEstimado / 1024 / 1024).toFixed(2)} MB`
-      );
 
       stage = "cargando módulo PDF";
       const [{ pdf }, { LegalizacionPdf }] = await Promise.all([
@@ -325,7 +310,6 @@ export function AdminReportesClient() {
         />
       );
       const blob = await pdf(doc).toBlob();
-      console.log("[admin firma] PDF blob:", { size: blob.size, type: blob.type });
 
       stage = "obteniendo URL de subida";
       const idRep = reporteId(activo);
