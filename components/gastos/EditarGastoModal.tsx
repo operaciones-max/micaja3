@@ -76,35 +76,35 @@ export default function EditarGastoModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto border-white/10 bg-[#0f1729] text-white">
+      <DialogContent className="max-h-[92vh] overflow-y-auto border-border bg-popover text-foreground">
         <DialogHeader>
           <DialogTitle>Editar gasto</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
             <Label>Ciudad</Label>
-            <Input value={form.Ciudad} onChange={(e) => setForm({ ...form, Ciudad: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.Ciudad} onChange={(e) => setForm({ ...form, Ciudad: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Motivo</Label>
-            <Input value={form.Motivo} onChange={(e) => setForm({ ...form, Motivo: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.Motivo} onChange={(e) => setForm({ ...form, Motivo: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Fecha inicio</Label>
-            <Input value={form.FechaInicio} onChange={(e) => setForm({ ...form, FechaInicio: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.FechaInicio} onChange={(e) => setForm({ ...form, FechaInicio: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Fecha fin</Label>
-            <Input value={form.FechaFin} onChange={(e) => setForm({ ...form, FechaFin: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.FechaFin} onChange={(e) => setForm({ ...form, FechaFin: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Concepto</Label>
-            <Input value={form.Concepto} onChange={(e) => setForm({ ...form, Concepto: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.Concepto} onChange={(e) => setForm({ ...form, Concepto: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Centro costos</Label>
             <Select value={form.CentroCostos || ""} onValueChange={(v) => setForm({ ...form, CentroCostos: v || "" })}>
-              <SelectTrigger className="mt-1 bg-white/5">
+              <SelectTrigger className="mt-1 bg-foreground/5">
                 <SelectValue placeholder="Centro de costos" />
               </SelectTrigger>
               <SelectContent>
@@ -115,15 +115,15 @@ export default function EditarGastoModal({
           </div>
           <div>
             <Label>NIT</Label>
-            <Input value={form.NIT} onChange={(e) => setForm({ ...form, NIT: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.NIT} onChange={(e) => setForm({ ...form, NIT: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Fecha factura</Label>
-            <Input value={form.FechaFactura} onChange={(e) => setForm({ ...form, FechaFactura: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.FechaFactura} onChange={(e) => setForm({ ...form, FechaFactura: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
           <div>
             <Label>Valor</Label>
-            <Input value={form.Valor} onChange={(e) => setForm({ ...form, Valor: e.target.value })} className="mt-1 bg-white/5" />
+            <Input value={form.Valor} onChange={(e) => setForm({ ...form, Valor: e.target.value })} className="mt-1 bg-foreground/5" />
           </div>
         </div>
         <DialogFooter>

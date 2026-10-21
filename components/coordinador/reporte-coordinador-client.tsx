@@ -239,20 +239,20 @@ export function ReporteCoordinadorClient() {
     const e = estado.toLowerCase();
     if (e.includes("enviado fx")) {
       return (
-        <Badge className="border-purple-500/30 bg-purple-500/20 text-purple-400">{estado}</Badge>
+        <Badge className="border-foreground/20 bg-foreground/15 text-foreground">{estado}</Badge>
       );
     }
     if (e.includes("firmado")) {
       return (
-        <Badge className="border-emerald-500/30 bg-emerald-500/20 text-emerald-400">{estado}</Badge>
+        <Badge className="border-emerald-500/30 bg-emerald-500/20 text-success">{estado}</Badge>
       );
     }
     if (e.includes("pendiente")) {
       return (
-        <Badge className="border-amber-500/30 bg-amber-500/20 text-amber-400">{estado}</Badge>
+        <Badge className="border-amber-500/30 bg-amber-500/20 text-warning">{estado}</Badge>
       );
     }
-    return <Badge className="border-gray-500/30 bg-gray-500/20 text-gray-400">{estado}</Badge>;
+    return <Badge className="border-border bg-muted text-muted-foreground">{estado}</Badge>;
   }
 
   return (
@@ -269,7 +269,7 @@ export function ReporteCoordinadorClient() {
           }}
         />
       ) : null}
-      {errEliminar ? <p className="text-sm text-red-400">{errEliminar}</p> : null}
+      {errEliminar ? <p className="text-sm text-danger">{errEliminar}</p> : null}
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"
@@ -291,7 +291,7 @@ export function ReporteCoordinadorClient() {
 
       {tab === "nuevo" ? (
         <>
-          <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+          <Card className="text-foreground">
             <CardHeader>
               <CardTitle>Paso 1 — Período y facturas aprobadas</CardTitle>
             </CardHeader>
@@ -326,7 +326,7 @@ export function ReporteCoordinadorClient() {
           </Card>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <Card className="border-bia-gray/20 bg-bia-blue-mid text-white lg:col-span-2">
+            <Card className="text-foreground lg:col-span-2">
               <CardHeader>
                 <CardTitle>Paso 2 — Seleccionar facturas</CardTitle>
               </CardHeader>
@@ -397,7 +397,7 @@ export function ReporteCoordinadorClient() {
               </CardContent>
             </Card>
 
-            <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+            <Card className="text-foreground">
               <CardHeader>
                 <CardTitle>Paso 3 — Resumen y firma</CardTitle>
               </CardHeader>
@@ -418,25 +418,25 @@ export function ReporteCoordinadorClient() {
                   />
                 </div>
                 {superaLimite ? (
-                  <p className="text-red-400">Supera el límite de la zona. Reduzca la selección.</p>
+                  <p className="text-danger">Supera el límite de la zona. Reduzca la selección.</p>
                 ) : null}
 
-                <div className="mb-4 rounded-xl border border-[#4728EF]/20 bg-[#4728EF]/5 p-4">
+                <div className="mb-4 rounded-xl border border-foreground/15 bg-foreground/5 p-4">
                   <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4728EF]/20 text-xs">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground/15 text-xs">
                       ✨
                     </div>
-                    <span className="text-xs font-semibold text-[#DEDEF9]">Análisis automático</span>
+                    <span className="text-xs font-semibold text-foreground">Análisis automático</span>
                     {cargandoResumen ? (
-                      <span className="animate-pulse text-xs text-[#525A72]">Analizando...</span>
+                      <span className="animate-pulse text-xs text-muted-foreground">Analizando...</span>
                     ) : null}
                   </div>
                   {resumenIA ? (
-                    <p className="text-sm leading-relaxed text-[#DEDEF9]">{resumenIA}</p>
+                    <p className="text-sm leading-relaxed text-foreground">{resumenIA}</p>
                   ) : !cargandoResumen && selectedRows.length > 0 ? (
-                    <p className="text-xs italic text-[#525A72]">No se pudo generar el análisis.</p>
+                    <p className="text-xs italic text-muted-foreground">No se pudo generar el análisis.</p>
                   ) : !cargandoResumen ? (
-                    <p className="text-xs italic text-[#525A72]">Selecciona facturas para ver el análisis.</p>
+                    <p className="text-xs italic text-muted-foreground">Selecciona facturas para ver el análisis.</p>
                   ) : null}
                 </div>
 
@@ -464,13 +464,13 @@ export function ReporteCoordinadorClient() {
                 >
                   {yaEnviando ? "Enviando..." : "Firmar y enviar al administrador"}
                 </Button>
-                {okMsg ? <p className="text-sm text-emerald-400">{okMsg}</p> : null}
+                {okMsg ? <p className="text-sm text-success">{okMsg}</p> : null}
               </CardContent>
             </Card>
           </div>
 
           <Dialog open={signOpen} onOpenChange={setSignOpen}>
-            <DialogContent className="max-w-lg border-bia-gray/20 bg-bia-blue-mid text-white">
+            <DialogContent className="max-w-lg border-bia-gray/20 bg-bia-blue-mid text-foreground">
               <DialogHeader>
                 <DialogTitle>Firma del coordinador</DialogTitle>
               </DialogHeader>
@@ -486,7 +486,7 @@ export function ReporteCoordinadorClient() {
           </Dialog>
         </>
       ) : (
-        <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+        <Card className="text-foreground">
           <CardHeader>
             <CardTitle>Mis reportes — {coordinador}</CardTitle>
           </CardHeader>
@@ -530,12 +530,12 @@ export function ReporteCoordinadorClient() {
                                     href={pdfUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center rounded-lg border border-[#525A72]/30 bg-[#001035] px-3 py-1.5 text-xs text-white hover:bg-[#0A1B4D]"
+                                    className="inline-flex items-center glass px-3 py-1.5 text-xs text-foreground hover:bg-muted"
                                   >
                                     ⬇ Descargar PDF
                                   </a>
                                 ) : (
-                                  <span className="self-center text-xs text-[#8892A4]">
+                                  <span className="self-center text-xs text-muted-foreground">
                                     Sin enlace Drive; el PDF se genera al enviar
                                   </span>
                                 )}
@@ -552,22 +552,22 @@ export function ReporteCoordinadorClient() {
                                   }
                                   className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                                     est.toLowerCase().includes("enviado fx")
-                                      ? "cursor-default border border-purple-500/20 bg-purple-500/10 text-purple-300"
-                                      : "bg-[#4728EF] text-white hover:bg-[#3a20d4] disabled:cursor-not-allowed disabled:opacity-60"
+                                      ? "cursor-default border border-foreground/20 bg-foreground/10 text-foreground"
+                                      : "bg-brand text-brand-foreground hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-60"
                                   }`}
                                 >
                                   {est.toLowerCase().includes("enviado fx") ? "✓ Ya enviado" : "📧 Form Finance"}
                                 </button>
                               </div>
                             ) : (
-                              <span className="text-xs text-amber-300">⏳ Pendiente firma del admin</span>
+                              <span className="text-xs text-warning">⏳ Pendiente firma del admin</span>
                             )}
                             {est.toLowerCase() === "pendiente admin" ? (
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="border-red-500/30 text-red-400"
+                                className="border-red-500/30 text-danger"
                                 onClick={() => setConfirmEliminarId(id)}
                               >
                                 🗑️ Eliminar

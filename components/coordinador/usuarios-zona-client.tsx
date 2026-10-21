@@ -116,13 +116,13 @@ export function UsuariosZonaClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Usuarios de la zona</h1>
+        <h1 className="text-2xl font-bold text-foreground">Usuarios de la zona</h1>
         <p className="text-sm text-bia-gray-light">
           {etiquetaZona(sectorLabel)} · balances desde Entregas y Facturas
         </p>
       </div>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Balances</CardTitle>
         </CardHeader>
@@ -150,7 +150,7 @@ export function UsuariosZonaClient({
                   const b = balanceForUser(bMap, u);
                   const tone = balanceStatusTone(b.balance);
                   const balCls =
-                    b.balance > 0 ? "text-[#08DDBC]" : b.balance < 0 ? "text-red-400" : "text-bia-gray-light";
+                    b.balance > 0 ? "text-foreground" : b.balance < 0 ? "text-danger" : "text-bia-gray-light";
                   return (
                     <TableRow key={u.email}>
                       <TableCell className="font-medium">{u.responsable}</TableCell>

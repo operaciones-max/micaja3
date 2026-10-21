@@ -124,40 +124,40 @@ export default function GastosAgrupacionesTab({ rol }: { rol: string; sector: st
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white">Agrupaciones / Reportes</h3>
-          <p className="text-sm text-gray-400">Agrupa gastos, firma y genera PDF final</p>
+          <h3 className="text-lg font-semibold text-foreground">Agrupaciones / Reportes</h3>
+          <p className="text-sm text-muted-foreground">Agrupa gastos, firma y genera PDF final</p>
         </div>
-        <Button onClick={() => setOpenNew(true)} className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={() => setOpenNew(true)} className="bg-brand hover:bg-brand/90">
           + Nueva Agrupación
         </Button>
       </div>
 
       {loading ? (
-        <div className="py-10 text-center text-gray-400">Cargando grupos...</div>
+        <div className="py-10 text-center text-muted-foreground">Cargando grupos...</div>
       ) : grupos.length === 0 ? (
-        <div className="py-10 text-center text-gray-400">No hay agrupaciones</div>
+        <div className="py-10 text-center text-muted-foreground">No hay agrupaciones</div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Grupo</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Período</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Responsable</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Total</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Estado</th>
-                <th className="px-3 py-2 text-right text-xs text-gray-400">Acciones</th>
+              <tr className="border-b border-border bg-foreground/5">
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Grupo</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Período</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Responsable</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Total</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Estado</th>
+                <th className="px-3 py-2 text-right text-xs text-muted-foreground">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {grupos.map((g) => (
-                <tr key={g.ID_Grupo} className="border-b border-white/5">
-                  <td className="px-3 py-2 text-xs text-white">{g.ID_Grupo}</td>
-                  <td className="px-3 py-2 text-xs text-gray-300">{g.FechaInicio} → {g.FechaFin}</td>
-                  <td className="px-3 py-2 text-xs text-gray-300">{g.Responsable}</td>
+                <tr key={g.ID_Grupo} className="border-b border-border">
+                  <td className="px-3 py-2 text-xs text-foreground">{g.ID_Grupo}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{g.FechaInicio} → {g.FechaFin}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{g.Responsable}</td>
                   <td className="px-3 py-2 text-xs text-cyan-400">{g.Total || "0"}</td>
                   <td className="px-3 py-2">
-                    <Badge className={`border text-xs ${String(g.Estado || "").toLowerCase().includes("firm") ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border-amber-500/30"}`}>
+                    <Badge className={`border text-xs ${String(g.Estado || "").toLowerCase().includes("firm") ? "bg-emerald-500/20 text-success border-emerald-500/30" : "bg-amber-500/20 text-warning border-amber-500/30"}`}>
                       {g.Estado || "Borrador"}
                     </Badge>
                   </td>
@@ -172,7 +172,7 @@ export default function GastosAgrupacionesTab({ rol }: { rol: string; sector: st
                             size="sm"
                             variant="outline"
                             onClick={() => { setEmailGrupo(g); setEmailDestino(""); setEmailError(""); }}
-                            className="border-emerald-500/30 text-emerald-300 gap-1"
+                            className="border-emerald-500/30 text-success gap-1"
                           >
                             <Mail className="h-3 w-3" />
                             Enviar email
@@ -180,7 +180,7 @@ export default function GastosAgrupacionesTab({ rol }: { rol: string; sector: st
                         </>
                       ) : null}
                       {rol === "admin" || String(g.Estado || "").toLowerCase() === "borrador" ? (
-                        <Button size="sm" variant="outline" onClick={() => void eliminar(g)} className="border-red-500/30 text-red-400">
+                        <Button size="sm" variant="outline" onClick={() => void eliminar(g)} className="border-red-500/30 text-danger">
                           Eliminar
                         </Button>
                       ) : null}
@@ -204,12 +204,12 @@ export default function GastosAgrupacionesTab({ rol }: { rol: string; sector: st
       />
 
       <Dialog open={!!emailGrupo} onOpenChange={(v) => { if (!v) { setEmailGrupo(null); setEmailDestino(""); setEmailError(""); } }}>
-        <DialogContent className="border-white/10 bg-[#0f1729] text-white sm:max-w-md">
+        <DialogContent className="border-border bg-popover text-foreground sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Enviar PDF por email</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Agrupación <span className="font-semibold text-cyan-300">{emailGrupo?.ID_Grupo}</span>
             </p>
             <div>
@@ -219,19 +219,19 @@ export default function GastosAgrupacionesTab({ rol }: { rol: string; sector: st
                 value={emailDestino}
                 onChange={(e) => setEmailDestino(e.target.value)}
                 placeholder="correo@empresa.com"
-                className="mt-1 bg-white/5 text-sm"
+                className="mt-1 bg-foreground/5 text-sm"
                 autoFocus
               />
-              <p className="mt-1 text-xs text-gray-500">Separa varios emails con coma o punto y coma.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Separa varios emails con coma o punto y coma.</p>
             </div>
             {emailError && (
-              <div className="rounded bg-red-500/20 border border-red-500/50 p-2 text-xs text-red-300">
+              <div className="rounded bg-red-500/20 border border-red-500/50 p-2 text-xs text-danger">
                 {emailError}
               </div>
             )}
           </div>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setEmailGrupo(null)} className="border-white/20 text-gray-300">Cancelar</Button>
+            <Button variant="outline" onClick={() => setEmailGrupo(null)} className="border-border text-muted-foreground">Cancelar</Button>
             <Button
               onClick={() => void enviarEmail()}
               disabled={emailEnviando || !emailDestino.trim()}

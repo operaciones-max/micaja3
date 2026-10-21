@@ -71,7 +71,7 @@ export default function EntregasPage() {
 
   return (
     <>
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader className="space-y-3">
           <CardTitle>Entregas recibidas</CardTitle>
           <div className="grid grid-cols-2 gap-2">
@@ -120,19 +120,19 @@ export default function EntregasPage() {
                               <img
                                 src={`/api/proxy-imagen?url=${encodeURIComponent(compUrl)}`}
                                 alt="Comprobante"
-                                className="mx-auto h-10 w-10 rounded border border-[#525A72]/20 object-cover hover:border-[#08DDBC]"
+                                className="mx-auto h-10 w-10 rounded border border-border object-cover hover:border-foreground"
                               />
                             </button>
                           ) : compUrl.startsWith("https://") ? (
                             <button
                               type="button"
                               onClick={() => setImagenModal(compUrl)}
-                              className="text-xs text-[#08DDBC] hover:underline"
+                              className="text-xs text-foreground hover:underline"
                             >
                               🖼️ Ver
                             </button>
                           ) : (
-                            <span className="text-xs text-[#525A72]">—</span>
+                            <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -164,12 +164,12 @@ export default function EntregasPage() {
             className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
             onClick={(ev) => ev.stopPropagation()}
           >
-            <div className="flex items-center justify-between bg-[#0A1B4D] px-4 py-2">
-              <span className="text-sm text-white">Comprobante de envío</span>
+            <div className="flex items-center justify-between glass-strong px-4 py-2">
+              <span className="text-sm text-foreground">Comprobante de envío</span>
               <button
                 type="button"
                 onClick={() => setImagenModal(null)}
-                className="text-[#525A72] hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
                 aria-label="Cerrar"
               >
                 ✕

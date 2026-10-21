@@ -91,24 +91,24 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
   const totalValor = useMemo(() => filtrados.reduce((sum, g) => sum + valorNum(g.Valor), 0), [filtrados]);
   const estadoBadge = (estado: string) =>
     estado === "Aprobada"
-      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+      ? "bg-emerald-500/20 text-success border-emerald-500/30"
       : estado === "Rechazada"
-        ? "bg-red-500/20 text-red-400 border-red-500/30"
-        : "bg-amber-500/20 text-amber-400 border-amber-500/30";
+        ? "bg-red-500/20 text-danger border-red-500/30"
+        : "bg-amber-500/20 text-warning border-amber-500/30";
 
   return (
     <div>
       <div className="mb-4 flex gap-3 flex-wrap">
         <div className="relative min-w-[220px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar gastos..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="border-white/10 bg-white/5 pl-9 text-white"
+            className="border-border bg-foreground/5 pl-9 text-foreground"
           />
         </div>
-        <Button variant="outline" onClick={() => void cargar()} className="gap-2 border-white/10 text-gray-300">
+        <Button variant="outline" onClick={() => void cargar()} className="gap-2 border-border text-muted-foreground">
           <RefreshCw className="h-4 w-4" />
           Actualizar
         </Button>
@@ -124,33 +124,33 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
       </div>
 
       {loading ? (
-        <div className="py-10 text-center text-gray-400">Cargando gastos...</div>
+        <div className="py-10 text-center text-muted-foreground">Cargando gastos...</div>
       ) : filtrados.length === 0 ? (
-        <div className="py-10 text-center text-gray-400">
+        <div className="py-10 text-center text-muted-foreground">
           <FileText className="mx-auto mb-2 h-8 w-8 opacity-30" />
           No hay registros
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-white/10">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Fecha</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Responsable</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Concepto</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Ciudad</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Valor</th>
-                <th className="px-3 py-2 text-left text-xs text-gray-400">Estado</th>
-                <th className="px-3 py-2 text-center text-xs text-gray-400">Acciones</th>
+              <tr className="border-b border-border bg-foreground/5">
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Fecha</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Responsable</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Concepto</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Ciudad</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Valor</th>
+                <th className="px-3 py-2 text-left text-xs text-muted-foreground">Estado</th>
+                <th className="px-3 py-2 text-center text-xs text-muted-foreground">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {filtrados.map((g) => (
-                <tr key={g._rowIndex} className="border-b border-white/5">
-                  <td className="px-3 py-2 text-xs text-gray-300">{g.FechaCreacion || "—"}</td>
-                  <td className="px-3 py-2 text-xs text-white">{g.Responsable || "—"}</td>
-                  <td className="px-3 py-2 text-xs text-gray-300">{g.Concepto || "—"}</td>
-                  <td className="px-3 py-2 text-xs text-gray-300">{g.Ciudad || "—"}</td>
+                <tr key={g._rowIndex} className="border-b border-border">
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{g.FechaCreacion || "—"}</td>
+                  <td className="px-3 py-2 text-xs text-foreground">{g.Responsable || "—"}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{g.Concepto || "—"}</td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">{g.Ciudad || "—"}</td>
                   <td className="px-3 py-2 text-xs text-cyan-400">{formatCOP(valorNum(g.Valor))}</td>
                   <td className="px-3 py-2">
                     <Badge className={`border text-xs ${estadoBadge(g.Estado || "Pendiente")}`}>
@@ -159,7 +159,7 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-center gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => setEdit(g)} className="h-7 px-2 text-blue-300">
+                      <Button size="sm" variant="ghost" onClick={() => setEdit(g)} className="h-7 px-2 text-info">
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
@@ -167,7 +167,7 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
                         variant="ghost"
                         disabled={eliminando === g._rowIndex}
                         onClick={() => void eliminarGasto(g._rowIndex)}
-                        className="h-7 px-2 text-red-400"
+                        className="h-7 px-2 text-danger"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -178,7 +178,7 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
                             variant="ghost"
                             disabled={actualizando === g._rowIndex || g.Estado === "Aprobada"}
                             onClick={() => void cambiarEstado(g._rowIndex, "Aprobada")}
-                            className="h-7 px-2 text-emerald-400"
+                            className="h-7 px-2 text-success"
                           >
                             <CheckCircle2 className="h-4 w-4" />
                           </Button>
@@ -187,7 +187,7 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
                             variant="ghost"
                             disabled={actualizando === g._rowIndex || g.Estado === "Rechazada"}
                             onClick={() => void cambiarEstado(g._rowIndex, "Rechazada")}
-                            className="h-7 px-2 text-red-400"
+                            className="h-7 px-2 text-danger"
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>
@@ -197,8 +197,8 @@ export default function GastosIndividualesTab({ rol }: { rol: string; sector: st
                   </td>
                 </tr>
               ))}
-              <tr className="bg-white/5">
-                <td colSpan={4} className="px-3 py-2 text-xs text-gray-400">{filtrados.length} registros</td>
+              <tr className="bg-foreground/5">
+                <td colSpan={4} className="px-3 py-2 text-xs text-muted-foreground">{filtrados.length} registros</td>
                 <td className="px-3 py-2 text-xs font-semibold text-cyan-400">{formatCOP(totalValor)}</td>
                 <td colSpan={2} />
               </tr>

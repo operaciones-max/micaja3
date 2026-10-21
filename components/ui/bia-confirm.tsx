@@ -18,8 +18,8 @@ export function BiaConfirm({
 }: Props) {
   const confirmCls =
     variant === "danger"
-      ? "rounded-xl border border-red-500/30 bg-red-500/20 px-4 py-2 text-sm text-red-400 hover:bg-red-500/30"
-      : "rounded-xl border border-[#08DDBC]/30 bg-[#08DDBC]/20 px-4 py-2 text-sm font-semibold text-[#08DDBC] hover:bg-[#08DDBC]/30";
+      ? "rounded-full border border-red-500/30 bg-red-500/15 px-5 py-2 text-sm font-semibold text-danger hover:bg-red-500/25"
+      : "rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90";
 
   return (
     <div
@@ -30,15 +30,15 @@ export function BiaConfirm({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-sm rounded-2xl border border-[#525A72]/30 bg-[#0A1B4D] p-6 shadow-2xl"
+        className="w-full max-w-sm glass-strong p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="mb-6 text-sm text-white">{mensaje}</p>
+        <p className="mb-6 text-sm text-foreground">{mensaje}</p>
         <div className="flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancelar}
-            className="rounded-xl bg-[#525A72]/20 px-4 py-2 text-sm text-[#8892A4] hover:bg-[#525A72]/30"
+            className="rounded-full bg-muted px-5 py-2 text-sm text-muted-foreground hover:bg-accent"
           >
             Cancelar
           </button>

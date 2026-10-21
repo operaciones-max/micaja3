@@ -113,7 +113,7 @@ export function AuditorFacturasPanel({
       </div>
 
       {error && (
-        <div className="rounded bg-red-500/10 border border-red-500/30 p-2 text-xs text-red-300">
+        <div className="rounded bg-red-500/10 border border-red-500/30 p-2 text-xs text-danger">
           {error}
         </div>
       )}
@@ -128,13 +128,13 @@ export function AuditorFacturasPanel({
           </div>
 
           {data.resumen && (
-            <div className="rounded bg-white/5 p-2 text-xs text-gray-200 whitespace-pre-wrap">
+            <div className="rounded bg-foreground/5 p-2 text-xs text-foreground/80 whitespace-pre-wrap">
               {data.resumen}
             </div>
           )}
 
           <details className="text-xs">
-            <summary className="cursor-pointer text-gray-300 hover:text-white">
+            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
               Ver detalle por factura ({data.items.length})
             </summary>
             <ul className="mt-2 space-y-1">
@@ -143,26 +143,26 @@ export function AuditorFacturasPanel({
                 return (
                   <li
                     key={it.idFactura}
-                    className="flex flex-wrap items-center gap-2 rounded border border-white/5 px-2 py-1"
+                    className="flex flex-wrap items-center gap-2 rounded border border-border px-2 py-1"
                   >
                     <EstadoBadge estado={it.estado} />
-                    <span className="text-white font-medium">
+                    <span className="text-foreground font-medium">
                       {f?.proveedor || "Proveedor?"}
                     </span>
-                    <span className="text-gray-400">·</span>
-                    <span className="uppercase text-gray-300">{it.categoria}</span>
-                    <span className="text-gray-400">·</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="uppercase text-muted-foreground">{it.categoria}</span>
+                    <span className="text-muted-foreground">·</span>
                     <span className="tabular-nums text-cyan-300">
                       {formatCOP(f?.valor ?? 0)}
                     </span>
                     {it.tope != null ? (
-                      <span className="text-gray-500">(tope {formatCOP(it.tope)})</span>
+                      <span className="text-muted-foreground">(tope {formatCOP(it.tope)})</span>
                     ) : null}
                     {it.estado === "EXCEDIDO" && it.diferencia > 0 && (
-                      <span className="text-amber-300">+{formatCOP(it.diferencia)}</span>
+                      <span className="text-warning">+{formatCOP(it.diferencia)}</span>
                     )}
                     {it.alertas.length > 0 && (
-                      <span className="text-violet-300 flex items-center gap-1">
+                      <span className="text-foreground flex items-center gap-1">
                         <TriangleAlert className="h-3 w-3" />
                         {it.alertas.join("; ")}
                       </span>
@@ -188,10 +188,10 @@ function Tile({
   color: "emerald" | "amber" | "red" | "violet";
 }) {
   const map = {
-    emerald: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-    amber: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-    red: "border-red-500/30 bg-red-500/10 text-red-300",
-    violet: "border-violet-500/30 bg-violet-500/10 text-violet-300",
+    emerald: "border-emerald-500/30 bg-emerald-500/10 text-success",
+    amber: "border-amber-500/30 bg-amber-500/10 text-warning",
+    red: "border-red-500/30 bg-red-500/10 text-danger",
+    violet: "border-foreground/20 bg-foreground/10 text-foreground",
   } as const;
   return (
     <div className={`rounded border px-2 py-1 ${map[color]}`}>
@@ -203,15 +203,15 @@ function Tile({
 
 function EstadoBadge({ estado }: { estado: AuditoriaItem["estado"] }) {
   if (estado === "OK")
-    return <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-300">OK</Badge>;
+    return <Badge className="border-emerald-500/30 bg-emerald-500/10 text-success">OK</Badge>;
   if (estado === "EXCEDIDO")
     return (
-      <Badge className="border-amber-500/30 bg-amber-500/10 text-amber-300 gap-1">
+      <Badge className="border-amber-500/30 bg-amber-500/10 text-warning gap-1">
         <AlertTriangle className="h-3 w-3" /> EXCEDIDO
       </Badge>
     );
   return (
-    <Badge className="border-red-500/30 bg-red-500/10 text-red-300 gap-1">
+    <Badge className="border-red-500/30 bg-red-500/10 text-danger gap-1">
       <Copy className="h-3 w-3" /> DUPLICADO
     </Badge>
   );

@@ -3,6 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { RoleBadge } from "@/components/shared/role-badge";
+import { Logo } from "@/components/shared/logo";
 import { LogOut, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarNav } from "./sidebar-nav";
@@ -15,7 +16,7 @@ export function Header({ serverSession }: { serverSession: Session }) {
   const rol = user?.rol || "user";
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border bg-background px-4 backdrop-blur supports-[backdrop-filter]:bg-background/95">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-border glass-bar px-4">
       <div className="flex items-center gap-2 md:hidden">
         <Sheet>
           <SheetTrigger
@@ -24,14 +25,12 @@ export function Header({ serverSession }: { serverSession: Session }) {
           >
             <Menu className="h-5 w-5" />
           </SheetTrigger>
-          <SheetContent side="left" className="w-72 border-border bg-sidebar p-0">
+          <SheetContent side="left" className="w-72 border-border p-0">
             <SidebarNav session={serverSession} className="min-h-screen border-0" />
           </SheetContent>
         </Sheet>
         <span className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
-          <span className="text-bia-aqua" aria-hidden>
-            ⚡
-          </span>
+          <Logo size={24} />
           Bia · {process.env.NEXT_PUBLIC_APP_NAME || "MiCaja"}
         </span>
       </div>

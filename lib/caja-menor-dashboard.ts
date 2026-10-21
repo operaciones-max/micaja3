@@ -13,7 +13,7 @@ export type CajaMenorMetricasUsuario = {
   pctEjecutado: number;
 };
 
-/** Límite COP por técnico y período según zona (Bogotá 1M, Costa Caribe 3M). */
+/** Límite COP por técnico y período (único para todas las zonas). */
 export function limiteCajaTecnicoPorSector(sector: string): number {
   return limiteAprobacionZona(sector);
 }

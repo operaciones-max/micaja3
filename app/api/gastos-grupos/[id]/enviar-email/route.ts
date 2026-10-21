@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth-options";
 import { getSupabase } from "@/lib/supabase";
 import { Resend } from "resend";
 import { TABLES } from "@/lib/db-tables";
+import { appPublicBaseUrl } from "@/lib/notificaciones";
 
 function escAttr(s: string): string {
   return s
@@ -89,20 +90,21 @@ export async function POST(
     const zonaLabel = String(row.region ?? "");
 
     const asunto = `Reporte Gastos Generales — ${responsable} — ${id}`;
+    const logoUrl = `${appPublicBaseUrl()}/logo.png`;
     const cuerpo = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: #001035; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h2 style="color: #08DDBC; margin: 0;">⚡ BIA Energy SAS ESP</h2>
+      <div style="background: #0a0a0a; padding: 20px; border-radius: 8px 8px 0 0;">
+        <table role="presentation" style="border-collapse: collapse;"><tr><td style="padding-right: 10px;"><img src="${logoUrl}" width="32" height="32" alt="Bia" style="display: block; border-radius: 7px;" /></td><td><h2 style="color: #ffffff; margin: 0;">BIA Energy SAS ESP</h2></td></tr></table>
         <p style="color: #fff; margin: 4px 0 0;">MiCaja — Reporte de Gastos Generales</p>
       </div>
       <div style="background: #f8f9fa; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
-        <h3 style="color: #001035;">Agrupación ${escAttr(id)}</h3>
+        <h3 style="color: #0a0a0a;">Agrupación ${escAttr(id)}</h3>
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
           <tr><td style="padding: 8px; color: #666;">Responsable:</td><td style="padding: 8px; font-weight: bold;">${escAttr(responsable)}</td></tr>
           <tr style="background: #f0f0f0;"><td style="padding: 8px; color: #666;">Motivo:</td><td style="padding: 8px;">${escAttr(motivo || "—")}</td></tr>
           <tr><td style="padding: 8px; color: #666;">Período:</td><td style="padding: 8px;">${escAttr(periodoDe)} al ${escAttr(periodoHasta)}</td></tr>
           ${zonaLabel ? `<tr style="background: #f0f0f0;"><td style="padding: 8px; color: #666;">Zona:</td><td style="padding: 8px;">${escAttr(zonaLabel)}</td></tr>` : ""}
-          <tr><td style="padding: 8px; color: #666;">Total:</td><td style="padding: 8px; font-weight: bold; font-size: 18px; color: #001035;">${escAttr(totalFormato)} COP</td></tr>
+          <tr><td style="padding: 8px; color: #666;">Total:</td><td style="padding: 8px; font-weight: bold; font-size: 18px; color: #0a0a0a;">${escAttr(totalFormato)} COP</td></tr>
         </table>
         <p style="color: #666; font-size: 13px; margin-top: 16px;">El reporte firmado se adjunta en PDF.</p>
       </div>

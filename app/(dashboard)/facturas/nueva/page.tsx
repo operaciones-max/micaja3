@@ -459,9 +459,9 @@ export default function NuevaFacturaPage() {
                 <span
                   className={
                     done
-                      ? "text-emerald-400"
+                      ? "text-success"
                       : pulse
-                        ? "text-amber-400 animate-pulse"
+                        ? "text-warning animate-pulse"
                         : "text-bia-gray"
                   }
                 >
@@ -470,9 +470,9 @@ export default function NuevaFacturaPage() {
                 <span
                   className={
                     done
-                      ? "text-white"
+                      ? "text-foreground"
                       : pulse
-                        ? "text-white animate-pulse"
+                        ? "text-foreground animate-pulse"
                         : "text-bia-gray"
                   }
                 >
@@ -489,7 +489,7 @@ export default function NuevaFacturaPage() {
         </div>
       </div>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Paso 1 — Seleccionar archivo</CardTitle>
         </CardHeader>
@@ -513,7 +513,7 @@ export default function NuevaFacturaPage() {
             <Button
               type="button"
               variant="secondary"
-              className="bg-bia-blue-mid text-white hover:bg-bia-gray/25"
+              className="bg-bia-blue-mid text-foreground hover:bg-bia-gray/25"
               onClick={() => cameraInputRef.current?.click()}
             >
               📷 Tomar foto
@@ -521,7 +521,7 @@ export default function NuevaFacturaPage() {
             <Button
               type="button"
               variant="secondary"
-              className="bg-bia-blue-mid text-white hover:bg-bia-gray/25"
+              className="bg-bia-blue-mid text-foreground hover:bg-bia-gray/25"
               onClick={() => galleryInputRef.current?.click()}
             >
               📁 Galería / archivo
@@ -531,7 +531,7 @@ export default function NuevaFacturaPage() {
             Imagen (JPG, PNG, WebP, HEIC…) o PDF · máximo 10MB
           </p>
 
-          {uploadError ? <p className="text-sm text-red-400">{uploadError}</p> : null}
+          {uploadError ? <p className="text-sm text-danger">{uploadError}</p> : null}
 
           {file ? (
             <div className="rounded-md border border-bia-gray/40 bg-bia-blue/40 p-3">
@@ -546,7 +546,7 @@ export default function NuevaFacturaPage() {
                 />
               ) : isPdf ? (
                 <div className="flex items-center gap-3 text-bia-gray-light">
-                  <FileText className="h-12 w-12 shrink-0 text-amber-400" />
+                  <FileText className="h-12 w-12 shrink-0 text-warning" />
                   <div>
                     <p className="font-medium">PDF</p>
                     <p className="text-sm text-bia-gray">{file.name}</p>
@@ -581,18 +581,18 @@ export default function NuevaFacturaPage() {
             </p>
           )}
           {uploadState === "ready" ? (
-            <p className="text-sm text-emerald-400">Listo ✅ — revisa los datos abajo</p>
+            <p className="text-sm text-success">Listo ✅ — revisa los datos abajo</p>
           ) : null}
         </CardContent>
       </Card>
 
       {ocrHint ? (
-        <p className="rounded-md border border-amber-800/60 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+        <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
           {ocrHint}
         </p>
       ) : null}
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Paso 2 — Revisar y completar</CardTitle>
         </CardHeader>
@@ -767,11 +767,11 @@ export default function NuevaFacturaPage() {
               </Label>
             </div>
             {aNombreBia ? (
-              <Badge className="w-fit border-emerald-700 bg-emerald-950 text-emerald-200">
+              <Badge className="w-fit border-success/40 bg-success/15 text-success">
                 ✅ A nombre de BIA
               </Badge>
             ) : (
-              <Badge className="w-fit border-amber-700 bg-amber-950 text-amber-200">
+              <Badge className="w-fit border-warning/40 bg-warning/15 text-warning">
                 ⚠️ No es a nombre de BIA
               </Badge>
             )}
@@ -843,16 +843,16 @@ export default function NuevaFacturaPage() {
 
       {duplicada ? (
         <div className="flex items-start gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
-          <span className="text-lg text-yellow-400" aria-hidden>
+          <span className="text-lg text-warning" aria-hidden>
             ⚠
           </span>
           <div>
-            <p className="text-sm font-semibold text-yellow-400">Factura duplicada</p>
-            <p className="mt-1 text-xs text-yellow-300">{saveError}</p>
+            <p className="text-sm font-semibold text-warning">Factura duplicada</p>
+            <p className="mt-1 text-xs text-warning">{saveError}</p>
           </div>
         </div>
       ) : saveError ? (
-        <p className="text-sm text-red-400">{saveError}</p>
+        <p className="text-sm text-danger">{saveError}</p>
       ) : null}
 
       <Button
@@ -860,7 +860,7 @@ export default function NuevaFacturaPage() {
         disabled={uploadState === "saving" || !imagenUrl.trim() || duplicada}
         className={
           duplicada
-            ? "w-full cursor-not-allowed bg-[#525A72]/30 text-[#525A72] hover:bg-[#525A72]/30"
+            ? "w-full cursor-not-allowed bg-muted text-muted-foreground hover:bg-muted"
             : "w-full bg-bia-aqua text-bia-blue font-semibold hover:bg-bia-blue-mid"
         }
       >

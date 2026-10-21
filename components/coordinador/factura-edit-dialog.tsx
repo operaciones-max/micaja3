@@ -126,7 +126,7 @@ export function FacturaEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto bg-bia-blue-mid text-white ring-bia-gray/40 sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto bg-bia-blue-mid text-foreground ring-bia-gray/40 sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar factura</DialogTitle>
         </DialogHeader>
@@ -242,7 +242,7 @@ export function FacturaEditDialog({
             <Checkbox id="fe-bia" checked={aNombreBia} onCheckedChange={(c) => setANombreBia(Boolean(c))} />
             <Label htmlFor="fe-bia">A nombre de BIA</Label>
           </div>
-          {error ? <p className="text-sm text-red-400">{error}</p> : null}
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
         </div>
         <DialogFooter className="border-t border-bia-gray/20 bg-bia-blue-mid sm:justify-end">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-bia-gray/30">

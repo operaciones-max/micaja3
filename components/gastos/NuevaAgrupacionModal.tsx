@@ -254,23 +254,23 @@ export default function NuevaAgrupacionModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-h-[95vh] overflow-y-auto border-white/10 bg-[#0f1729] text-white w-full max-w-2xl">
+      <DialogContent className="max-h-[95vh] overflow-y-auto border-border bg-popover text-foreground w-full max-w-2xl">
         <DialogHeader>
           <DialogTitle>Nueva agrupación de gastos</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-300">Información de la agrupación</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">Información de la agrupación</h3>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
                 <Label className="text-xs">Motivo del viaje</Label>
-                <Input value={motivo} onChange={(e) => setMotivo(e.target.value)} className="mt-1 bg-white/5 text-sm" />
+                <Input value={motivo} onChange={(e) => setMotivo(e.target.value)} className="mt-1 bg-foreground/5 text-sm" />
               </div>
               <div>
                 <Label className="text-xs">Centro de costos</Label>
                 <Select value={centroCostos} onValueChange={(v) => setCentroCostos(v ?? "")}>
-                  <SelectTrigger className="mt-1 bg-white/5 text-sm"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                  <SelectTrigger className="mt-1 bg-foreground/5 text-sm"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="OPS-Activation">OPS-Activation</SelectItem>
                     <SelectItem value="OPS-Retention">OPS-Retention</SelectItem>
@@ -279,31 +279,31 @@ export default function NuevaAgrupacionModal({
               </div>
               <div>
                 <Label className="text-xs">Fecha inicio</Label>
-                <Input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="mt-1 bg-white/5 text-sm [color-scheme:dark]" />
+                <Input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="mt-1 bg-foreground/5 text-sm [color-scheme:dark]" />
               </div>
               <div>
                 <Label className="text-xs">Fecha fin</Label>
-                <Input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="mt-1 bg-white/5 text-sm [color-scheme:dark]" />
+                <Input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="mt-1 bg-foreground/5 text-sm [color-scheme:dark]" />
               </div>
             </div>
           </div>
 
-          <div className="space-y-2 border-t border-white/10 pt-4">
-            <h3 className="text-sm font-semibold text-gray-300">Sección 1: Seleccionar gastos existentes</h3>
+          <div className="space-y-2 border-t border-border pt-4">
+            <h3 className="text-sm font-semibold text-muted-foreground">Sección 1: Seleccionar gastos existentes</h3>
             {gastos.length === 0 ? (
-              <p className="text-xs text-gray-500">No hay gastos disponibles</p>
+              <p className="text-xs text-muted-foreground">No hay gastos disponibles</p>
             ) : (
-              <div className="max-h-48 overflow-auto rounded border border-white/10 p-2 space-y-1">
+              <div className="max-h-48 overflow-auto rounded border border-border p-2 space-y-1">
                 {gastos.map((g) => (
-                  <label key={g._rowIndex} className="flex items-center gap-2 text-xs p-2 rounded hover:bg-white/5">
+                  <label key={g._rowIndex} className="flex items-center gap-2 text-xs p-2 rounded hover:bg-foreground/5">
                     <Checkbox
                       checked={selected.has(g._rowIndex)}
                       onCheckedChange={(v) => setSelected((prev) => { const n = new Set(prev); if (v === true) n.add(g._rowIndex); else n.delete(g._rowIndex); return n; })}
                     />
-                    <span className="flex-1 text-gray-300">
+                    <span className="flex-1 text-muted-foreground">
                       <span className="font-medium">{g.Concepto || "—"}</span>
-                      {g.Proveedor && <span className="text-gray-500"> • {g.Proveedor}</span>}
-                      {g.FechaFactura && <span className="text-gray-500"> • {g.FechaFactura}</span>}
+                      {g.Proveedor && <span className="text-muted-foreground"> • {g.Proveedor}</span>}
+                      {g.FechaFactura && <span className="text-muted-foreground"> • {g.FechaFactura}</span>}
                     </span>
                     <span className="text-cyan-400 font-medium">{formatCOP(parseFloat(String(g.Valor || "0").replace(/[^\d.-]/g, "")))}</span>
                   </label>
@@ -312,76 +312,76 @@ export default function NuevaAgrupacionModal({
             )}
             {gastosSel.length > 0 && (
               <div className="text-right text-xs pt-1">
-                <p className="text-gray-400">Seleccionados: <span className="text-cyan-400 font-semibold">{gastosSel.length}</span></p>
-                <p className="text-gray-300 font-medium">Subtotal: <span className="text-cyan-400">{formatCOP(totalGastos)}</span></p>
+                <p className="text-muted-foreground">Seleccionados: <span className="text-cyan-400 font-semibold">{gastosSel.length}</span></p>
+                <p className="text-muted-foreground font-medium">Subtotal: <span className="text-cyan-400">{formatCOP(totalGastos)}</span></p>
               </div>
             )}
           </div>
 
-          <div className="space-y-2 border-t border-white/10 pt-4">
-            <h3 className="text-sm font-semibold text-gray-300">Sección 2: Subir facturas nuevas con OCR</h3>
+          <div className="space-y-2 border-t border-border pt-4">
+            <h3 className="text-sm font-semibold text-muted-foreground">Sección 2: Subir facturas nuevas con OCR</h3>
             <div className="border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 hover:border-cyan-400 hover:bg-cyan-500/10 transition-colors rounded-xl p-8 text-center">
               <label className="cursor-pointer block">
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-cyan-500/20">
                     <Upload className="h-8 w-8 text-cyan-300" />
                   </div>
-                  <p className="text-base font-semibold text-white">Sube tus facturas aquí</p>
-                  <p className="text-sm text-gray-300">Haz click o arrastra imágenes / PDFs</p>
-                  <p className="text-xs text-gray-500">JPG, PNG o PDF — máx. 10MB por archivo · puedes subir varias a la vez</p>
+                  <p className="text-base font-semibold text-foreground">Sube tus facturas aquí</p>
+                  <p className="text-sm text-muted-foreground">Haz click o arrastra imágenes / PDFs</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG o PDF — máx. 10MB por archivo · puedes subir varias a la vez</p>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,application/pdf" multiple onChange={(e) => void procesarArchivos(e.target.files)} className="hidden" />
               </label>
             </div>
 
-            {ocrError && <div className="rounded bg-red-500/20 border border-red-500/50 p-2 text-xs text-red-300">{ocrError}</div>}
+            {ocrError && <div className="rounded bg-red-500/20 border border-red-500/50 p-2 text-xs text-danger">{ocrError}</div>}
 
             {facturasOcr.length > 0 && (
-              <div className="overflow-auto rounded border border-white/10">
+              <div className="overflow-auto rounded border border-border">
                 <Table className="text-xs">
                   <TableHeader>
-                    <TableRow className="border-b border-white/10 hover:bg-transparent">
-                      <TableHead className="px-2 py-1 text-gray-400">Proveedor</TableHead>
-                      <TableHead className="px-2 py-1 text-gray-400">NIT</TableHead>
-                      <TableHead className="px-2 py-1 text-gray-400">Nº Factura</TableHead>
-                      <TableHead className="px-2 py-1 text-gray-400">Fecha</TableHead>
-                      <TableHead className="px-2 py-1 text-gray-400 text-right">Valor</TableHead>
-                      <TableHead className="px-2 py-1 text-gray-400">Concepto</TableHead>
-                      <TableHead className="px-2 py-1 text-center text-gray-400">Acc.</TableHead>
+                    <TableRow className="border-b border-border hover:bg-transparent">
+                      <TableHead className="px-2 py-1 text-muted-foreground">Proveedor</TableHead>
+                      <TableHead className="px-2 py-1 text-muted-foreground">NIT</TableHead>
+                      <TableHead className="px-2 py-1 text-muted-foreground">Nº Factura</TableHead>
+                      <TableHead className="px-2 py-1 text-muted-foreground">Fecha</TableHead>
+                      <TableHead className="px-2 py-1 text-muted-foreground text-right">Valor</TableHead>
+                      <TableHead className="px-2 py-1 text-muted-foreground">Concepto</TableHead>
+                      <TableHead className="px-2 py-1 text-center text-muted-foreground">Acc.</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {facturasOcr.map((f) => (
-                      <TableRow key={f.id} className="border-b border-white/5 hover:bg-white/5">
+                      <TableRow key={f.id} className="border-b border-border hover:bg-foreground/5">
                         {f.loading ? (
                           <TableCell colSpan={7} className="px-2 py-2">
                             <div className="flex items-center gap-2">
                               <Loader2 className="h-3 w-3 animate-spin" />
-                              <span className="text-gray-400">Procesando OCR...</span>
+                              <span className="text-muted-foreground">Procesando OCR...</span>
                             </div>
                           </TableCell>
                         ) : f.error ? (
                           <TableCell colSpan={7} className="px-2 py-2">
-                            <div className="text-red-400 text-xs mb-1">{f.error}</div>
+                            <div className="text-danger text-xs mb-1">{f.error}</div>
                             <div className="grid grid-cols-2 gap-1">
-                              <Input placeholder="Proveedor" value={f.proveedor} onChange={(e) => editarFacturaOcr(f.id, "proveedor", e.target.value)} className="h-6 bg-white/5 text-xs px-1" />
-                              <Input placeholder="NIT" value={f.nit} onChange={(e) => editarFacturaOcr(f.id, "nit", e.target.value)} className="h-6 bg-white/5 text-xs px-1" />
-                              <Input placeholder="Nº Factura" value={f.numFactura} onChange={(e) => editarFacturaOcr(f.id, "numFactura", e.target.value)} className="h-6 bg-white/5 text-xs px-1" />
-                              <Input placeholder="Fecha" value={f.fecha} onChange={(e) => editarFacturaOcr(f.id, "fecha", e.target.value)} className="h-6 bg-white/5 text-xs px-1" />
-                              <Input placeholder="Valor" value={f.valor} onChange={(e) => editarFacturaOcr(f.id, "valor", e.target.value)} className="h-6 bg-white/5 text-xs px-1" />
-                              <Input placeholder="Concepto" value={f.concepto} onChange={(e) => editarFacturaOcr(f.id, "concepto", e.target.value)} className="h-6 bg-white/5 text-xs px-1 col-span-2" />
+                              <Input placeholder="Proveedor" value={f.proveedor} onChange={(e) => editarFacturaOcr(f.id, "proveedor", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" />
+                              <Input placeholder="NIT" value={f.nit} onChange={(e) => editarFacturaOcr(f.id, "nit", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" />
+                              <Input placeholder="Nº Factura" value={f.numFactura} onChange={(e) => editarFacturaOcr(f.id, "numFactura", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" />
+                              <Input placeholder="Fecha" value={f.fecha} onChange={(e) => editarFacturaOcr(f.id, "fecha", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" />
+                              <Input placeholder="Valor" value={f.valor} onChange={(e) => editarFacturaOcr(f.id, "valor", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" />
+                              <Input placeholder="Concepto" value={f.concepto} onChange={(e) => editarFacturaOcr(f.id, "concepto", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1 col-span-2" />
                             </div>
                           </TableCell>
                         ) : (
                           <>
-                            <TableCell className="px-2 py-1"><Input value={f.proveedor} onChange={(e) => editarFacturaOcr(f.id, "proveedor", e.target.value)} className="h-6 bg-white/5 text-xs px-1" /></TableCell>
-                            <TableCell className="px-2 py-1"><Input value={f.nit} onChange={(e) => editarFacturaOcr(f.id, "nit", e.target.value)} className="h-6 bg-white/5 text-xs px-1" /></TableCell>
-                            <TableCell className="px-2 py-1"><Input value={f.numFactura} onChange={(e) => editarFacturaOcr(f.id, "numFactura", e.target.value)} className="h-6 bg-white/5 text-xs px-1" /></TableCell>
-                            <TableCell className="px-2 py-1"><Input value={f.fecha} onChange={(e) => editarFacturaOcr(f.id, "fecha", e.target.value)} className="h-6 bg-white/5 text-xs px-1" /></TableCell>
-                            <TableCell className="px-2 py-1 text-right"><Input value={f.valor} onChange={(e) => editarFacturaOcr(f.id, "valor", e.target.value)} className="h-6 bg-white/5 text-xs px-1 text-right" /></TableCell>
-                            <TableCell className="px-2 py-1"><Input value={f.concepto} onChange={(e) => editarFacturaOcr(f.id, "concepto", e.target.value)} className="h-6 bg-white/5 text-xs px-1" /></TableCell>
+                            <TableCell className="px-2 py-1"><Input value={f.proveedor} onChange={(e) => editarFacturaOcr(f.id, "proveedor", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" /></TableCell>
+                            <TableCell className="px-2 py-1"><Input value={f.nit} onChange={(e) => editarFacturaOcr(f.id, "nit", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" /></TableCell>
+                            <TableCell className="px-2 py-1"><Input value={f.numFactura} onChange={(e) => editarFacturaOcr(f.id, "numFactura", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" /></TableCell>
+                            <TableCell className="px-2 py-1"><Input value={f.fecha} onChange={(e) => editarFacturaOcr(f.id, "fecha", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" /></TableCell>
+                            <TableCell className="px-2 py-1 text-right"><Input value={f.valor} onChange={(e) => editarFacturaOcr(f.id, "valor", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1 text-right" /></TableCell>
+                            <TableCell className="px-2 py-1"><Input value={f.concepto} onChange={(e) => editarFacturaOcr(f.id, "concepto", e.target.value)} className="h-6 bg-foreground/5 text-xs px-1" /></TableCell>
                             <TableCell className="px-2 py-1">
-                              <Button size="sm" variant="ghost" onClick={() => eliminarFacturaOcr(f.id)} className="h-6 px-1 text-red-400 hover:bg-red-500/20">
+                              <Button size="sm" variant="ghost" onClick={() => eliminarFacturaOcr(f.id)} className="h-6 px-1 text-danger hover:bg-red-500/20">
                                 <Trash2 className="h-3 w-3" />
                               </Button>
                             </TableCell>
@@ -396,41 +396,41 @@ export default function NuevaAgrupacionModal({
 
             {facturasOcr.length > 0 && (
               <div className="text-right text-xs pt-1">
-                <p className="text-gray-300 font-medium">OCR Total: <span className="text-cyan-400">{formatCOP(totalOcr)}</span></p>
+                <p className="text-muted-foreground font-medium">OCR Total: <span className="text-cyan-400">{formatCOP(totalOcr)}</span></p>
               </div>
             )}
 
-            {hasErrors && <p className="text-xs text-orange-400">⚠️ Algunos archivos tuvieron errores. Completa manualmente o elimínalos.</p>}
+            {hasErrors && <p className="text-xs text-orange">⚠️ Algunos archivos tuvieron errores. Completa manualmente o elimínalos.</p>}
           </div>
 
           {(gastosSel.length > 0 || facturasOcr.length > 0) && (
-            <div className="border-t border-white/10 pt-4 space-y-2">
-              <h3 className="text-sm font-semibold text-gray-300">Resumen consolidado</h3>
-              <div className="bg-white/5 rounded p-3 space-y-1">
+            <div className="border-t border-border pt-4 space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground">Resumen consolidado</h3>
+              <div className="bg-foreground/5 rounded p-3 space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Gastos seleccionados:</span>
+                  <span className="text-muted-foreground">Gastos seleccionados:</span>
                   <span className="text-cyan-400">{formatCOP(totalGastos)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Facturas OCR:</span>
+                  <span className="text-muted-foreground">Facturas OCR:</span>
                   <span className="text-cyan-400">{formatCOP(totalOcr)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-semibold border-t border-white/10 pt-1 mt-1">
-                  <span className="text-gray-300">Total general:</span>
-                  <span className="text-emerald-400">{formatCOP(totalGeneral)}</span>
+                <div className="flex justify-between text-sm font-semibold border-t border-border pt-1 mt-1">
+                  <span className="text-muted-foreground">Total general:</span>
+                  <span className="text-success">{formatCOP(totalGeneral)}</span>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="border-t border-white/10 pt-4 space-y-2">
-            <h3 className="text-sm font-semibold text-gray-300">Firma digital</h3>
+          <div className="border-t border-border pt-4 space-y-2">
+            <h3 className="text-sm font-semibold text-muted-foreground">Firma digital</h3>
             <FirmaCanvas onFirma={(b64) => setFirma(b64)} onLimpiar={() => setFirma("")} />
           </div>
         </div>
 
         <DialogFooter className="flex gap-2 justify-end">
-          <Button onClick={onClose} variant="outline" className="border-white/20 text-gray-300 hover:bg-white/5">Cancelar</Button>
+          <Button onClick={onClose} variant="outline" className="border-border text-muted-foreground hover:bg-foreground/5">Cancelar</Button>
           <Button
             onClick={() => void crear()}
             disabled={saving || !firma || (gastosSel.length === 0 && facturasOcr.length === 0)}

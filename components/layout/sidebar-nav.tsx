@@ -17,8 +17,8 @@ import {
   Receipt,
   Scale,
   LogOut,
-  Zap,
 } from "lucide-react";
+import { Logo } from "@/components/shared/logo";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
 
@@ -73,12 +73,12 @@ export function SidebarNav({
   return (
     <aside
       className={cn(
-        "flex h-full min-h-screen w-64 flex-col border-r border-border bg-sidebar",
+        "flex h-full min-h-screen w-64 flex-col border-r border-border glass-bar",
         className
       )}
     >
       <div className="flex items-center gap-2 border-b border-border p-6">
-        <Zap className="h-7 w-7 shrink-0 text-bia-aqua" aria-hidden strokeWidth={2.25} />
+        <Logo size={36} />
         <div>
           <span className="text-lg font-bold tracking-wide text-foreground">Bia</span>
           <p className="text-xs text-muted-foreground">{process.env.NEXT_PUBLIC_APP_NAME || "MiCaja"}</p>
@@ -97,10 +97,10 @@ export function SidebarNav({
               key={item.href}
               href={item.href}
               className={cn(
-                "mx-2 flex min-h-[44px] items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors",
+                "mx-3 flex min-h-[44px] items-center gap-3 rounded-full px-4 py-3 text-sm transition-colors",
                 active
-                  ? "border-l-2 border-bia-aqua bg-bia-aqua/10 font-medium text-bia-aqua"
-                  : "border-l-2 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-foreground/10 font-semibold text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <Icon className="h-5 w-5 shrink-0" />

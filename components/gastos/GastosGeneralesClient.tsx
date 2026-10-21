@@ -7,11 +7,11 @@ import GastosAgrupacionesTab from "@/components/gastos/GastosAgrupacionesTab";
 export default function GastosGeneralesClient({ rol, sector }: { rol: string; sector: string }) {
   return (
     <Tabs defaultValue="individuales" className="w-full">
-      <TabsList className="mb-6 border border-white/10 bg-white/5">
-        <TabsTrigger value="individuales" className="data-[state=active]:bg-white/10">
+      <TabsList className="mb-6 border border-border bg-foreground/5">
+        <TabsTrigger value="individuales" className="data-[state=active]:bg-foreground/10">
           Gastos Individuales
         </TabsTrigger>
-        <TabsTrigger value="agrupaciones" className="data-[state=active]:bg-white/10">
+        <TabsTrigger value="agrupaciones" className="data-[state=active]:bg-foreground/10">
           Agrupaciones / Reportes
         </TabsTrigger>
       </TabsList>

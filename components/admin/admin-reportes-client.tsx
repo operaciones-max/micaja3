@@ -408,7 +408,7 @@ export function AdminReportesClient() {
         />
       ) : null}
       {successMsg ? <BiaAlert type="success" message={successMsg} /> : null}
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Reportes de legalización</CardTitle>
         </CardHeader>
@@ -450,7 +450,7 @@ export function AdminReportesClient() {
                         {est === "Firmado" || est === "Enviado FX" ? (
                           <Badge className="border-bia-aqua/30 bg-bia-aqua/10 text-bia-aqua">{est}</Badge>
                         ) : (
-                          <Badge className="border-amber-700 bg-amber-950 text-amber-200">{est}</Badge>
+                          <Badge className="border-warning/40 bg-warning/15 text-warning">{est}</Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -465,7 +465,7 @@ export function AdminReportesClient() {
                               href={pdfUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex h-7 items-center rounded-lg border border-bia-gray/30 px-2.5 text-[0.8rem] text-white hover:bg-bia-blue-mid"
+                              className="inline-flex h-7 items-center rounded-lg border border-bia-gray/30 px-2.5 text-[0.8rem] text-foreground hover:bg-bia-blue-mid"
                             >
                               ⬇ Descargar
                             </a>
@@ -474,7 +474,7 @@ export function AdminReportesClient() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="border-red-500/30 text-red-400"
+                            className="border-red-500/30 text-danger"
                             onClick={() => setConfirmEliminarId(id)}
                           >
                             🗑️
@@ -508,7 +508,7 @@ export function AdminReportesClient() {
           }
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto border-bia-gray/20 bg-bia-blue-mid text-white sm:max-w-3xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto border-bia-gray/20 bg-bia-blue-mid text-foreground sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Revisar y firmar</DialogTitle>
           </DialogHeader>
@@ -517,21 +517,21 @@ export function AdminReportesClient() {
               <div className="mb-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 sm:gap-4">
                 <div>
                   <span className="text-bia-gray">Coordinador</span>
-                  <p className="text-white">{activo.Coordinador || "—"}</p>
+                  <p className="text-foreground">{activo.Coordinador || "—"}</p>
                 </div>
                 <div>
                   <span className="text-bia-gray">Sector</span>
-                  <p className="text-white">{activo.Sector || "—"}</p>
+                  <p className="text-foreground">{activo.Sector || "—"}</p>
                 </div>
                 <div className="sm:col-span-2">
                   <span className="text-bia-gray">Período</span>
-                  <p className="text-white">
+                  <p className="text-foreground">
                     {activo.Periodo_Desde || activo.Periodo || "—"} al {activo.Periodo_Hasta || "—"}
                   </p>
                 </div>
                 <div>
                   <span className="text-bia-gray">Total</span>
-                  <p className="text-white">
+                  <p className="text-foreground">
                     {formatCOP(parseCOPString(String(activo.Total || activo.TotalAprobado || "0")))}
                   </p>
                 </div>
@@ -539,12 +539,12 @@ export function AdminReportesClient() {
 
               {facturasReporte.length > 0 ? (
                 <div className="mt-4">
-                  <p className="mb-2 text-sm font-semibold text-white">
+                  <p className="mb-2 text-sm font-semibold text-foreground">
                     Facturas incluidas ({facturasReporte.length})
                   </p>
-                  <div className="max-h-64 overflow-y-auto rounded-xl border border-[#525A72]/20">
+                  <div className="max-h-64 overflow-y-auto rounded-xl border border-border">
                     <table className="w-full text-xs">
-                      <thead className="sticky top-0 bg-[#001035] text-[#8892A4]">
+                      <thead className="sticky top-0 glass text-muted-foreground">
                         <tr>
                           <th className="px-3 py-2 text-left">No.</th>
                           <th className="px-3 py-2 text-left">Proveedor</th>
@@ -560,13 +560,13 @@ export function AdminReportesClient() {
                           return (
                             <tr
                               key={`${f.id || i}-${i}`}
-                              className="border-t border-[#525A72]/10 hover:bg-[#0A1B4D]/50"
+                              className="border-t border-border hover:bg-muted/50"
                             >
-                              <td className="px-3 py-2 text-[#8892A4]">{i + 1}</td>
-                              <td className="px-3 py-2 text-white">{f.proveedor || "—"}</td>
-                              <td className="px-3 py-2 text-[#8892A4]">{f.concepto || "—"}</td>
-                              <td className="px-3 py-2 text-[#8892A4]">{f.fecha || "—"}</td>
-                              <td className="px-3 py-2 text-right text-sm font-medium text-[#08DDBC]">
+                              <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
+                              <td className="px-3 py-2 text-foreground">{f.proveedor || "—"}</td>
+                              <td className="px-3 py-2 text-muted-foreground">{f.concepto || "—"}</td>
+                              <td className="px-3 py-2 text-muted-foreground">{f.fecha || "—"}</td>
+                              <td className="px-3 py-2 text-right text-sm font-medium text-foreground">
                                 ${Number(f.valor || 0).toLocaleString("es-CO")}
                               </td>
                               <td className="px-3 py-2 text-center">
@@ -574,27 +574,27 @@ export function AdminReportesClient() {
                                   <button
                                     type="button"
                                     onClick={() => setImagenModal(imgSrc)}
-                                    className="text-xs text-[#08DDBC] hover:underline"
+                                    className="text-xs text-foreground hover:underline"
                                   >
                                     🖼️ Ver
                                   </button>
                                 ) : (
-                                  <span className="text-xs text-[#525A72]">—</span>
+                                  <span className="text-xs text-muted-foreground">—</span>
                                 )}
                               </td>
                             </tr>
                           );
                         })}
                       </tbody>
-                      <tfoot className="bg-[#001035]">
+                      <tfoot className="glass">
                         <tr>
                           <td
                             colSpan={4}
-                            className="px-3 py-2 text-right text-xs font-semibold text-[#8892A4]"
+                            className="px-3 py-2 text-right text-xs font-semibold text-muted-foreground"
                           >
                             Total:
                           </td>
-                          <td className="px-3 py-2 text-right text-xs font-bold text-white">
+                          <td className="px-3 py-2 text-right text-xs font-bold text-foreground">
                             $
                             {facturasReporte
                               .reduce((s, f) => s + Number(f.valor || 0), 0)
@@ -609,12 +609,12 @@ export function AdminReportesClient() {
               ) : null}
 
               {(resumenIA || cargandoResumenIA) && (
-                <div className="my-4 rounded-xl border border-[#4728EF]/20 bg-[#4728EF]/5 p-4">
-                  <p className="mb-2 text-xs font-semibold text-[#DEDEF9]">✨ Análisis IA</p>
+                <div className="my-4 rounded-xl border border-foreground/15 bg-foreground/5 p-4">
+                  <p className="mb-2 text-xs font-semibold text-foreground">✨ Análisis IA</p>
                   {cargandoResumenIA ? (
-                    <p className="animate-pulse text-sm text-[#525A72]">Generando resumen...</p>
+                    <p className="animate-pulse text-sm text-muted-foreground">Generando resumen...</p>
                   ) : (
-                    <p className="text-sm leading-relaxed text-[#DEDEF9]">{resumenIA}</p>
+                    <p className="text-sm leading-relaxed text-foreground">{resumenIA}</p>
                   )}
                 </div>
               )}
@@ -640,15 +640,15 @@ export function AdminReportesClient() {
               )}
 
               <div className="mt-4">
-                <p className="mb-2 text-sm text-[#8892A4]">Firma del coordinador:</p>
+                <p className="mb-2 text-sm text-muted-foreground">Firma del coordinador:</p>
                 {firmaSrc(String(activo.Firma_Coordinador || activo.FirmaCoordinador || "")) ? (
                   <img
                     src={firmaSrc(String(activo.Firma_Coordinador || activo.FirmaCoordinador || ""))}
                     alt="Firma coordinador"
-                    className="h-20 rounded border border-[#525A72]/20 bg-white object-contain p-2"
+                    className="h-20 rounded border border-border bg-white object-contain p-2"
                   />
                 ) : (
-                  <p className="text-xs italic text-[#525A72]">Sin firma registrada</p>
+                  <p className="text-xs italic text-muted-foreground">Sin firma registrada</p>
                 )}
               </div>
 
@@ -662,7 +662,7 @@ export function AdminReportesClient() {
                 />
               </div>
 
-              {errorMsg ? <p className="mt-2 text-sm text-red-400">{errorMsg}</p> : null}
+              {errorMsg ? <p className="mt-2 text-sm text-danger">{errorMsg}</p> : null}
 
               <DialogFooter className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
                 <Button variant="outline" type="button" onClick={() => setActivo(null)}>
@@ -670,7 +670,7 @@ export function AdminReportesClient() {
                 </Button>
                 <Button
                   type="button"
-                  className="bg-bia-aqua text-bia-blue hover:bg-[#06C4A8]"
+                  className="bg-bia-aqua text-bia-blue hover:bg-bia-aqua/90"
                   disabled={!firmaAdmin.trim() || procesando}
                   onClick={() => void confirmarFirmaAdmin()}
                 >
@@ -694,12 +694,12 @@ export function AdminReportesClient() {
             className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between bg-[#0A1B4D] px-4 py-2">
-              <span className="text-sm font-medium text-white">Factura adjunta</span>
+            <div className="flex items-center justify-between glass-strong px-4 py-2">
+              <span className="text-sm font-medium text-foreground">Factura adjunta</span>
               <button
                 type="button"
                 onClick={() => setImagenModal(null)}
-                className="text-[#525A72] hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
                 aria-label="Cerrar"
               >
                 ✕

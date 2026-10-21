@@ -2,10 +2,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const COLORS: Record<string, string> = {
-  admin: "border-bia-purple/30 bg-bia-purple/20 text-bia-purple-light hover:bg-bia-purple/30",
-  coordinador: "border-bia-aqua/30 bg-bia-aqua/15 text-bia-aqua hover:bg-bia-aqua/25",
-  verificador: "border-bia-gray/30 bg-bia-gray/25 text-bia-gray-light hover:bg-bia-gray/35",
-  user: "border-bia-gray/30 bg-bia-blue-mid text-bia-gray-light hover:bg-bia-gray/20",
+  admin: "border-foreground bg-foreground text-background",
+  coordinador: "border-foreground/20 bg-foreground/10 text-foreground",
+  verificador: "border-border bg-muted text-muted-foreground",
+  user: "border-border bg-muted text-muted-foreground",
 };
 
 export function RoleBadge({ rol }: { rol: string }) {

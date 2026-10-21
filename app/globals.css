@@ -1,220 +1,167 @@
-@import url("https://api.fontshare.com/v2/css?f[]=open-sauce-one@300,400,500,600,700,800,900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════
-   VARIABLES BIA — RGB para que Tailwind soporte modificadores de opacidad
-   (/10, /20, /50, etc.)
+   MiCaja · template iOS blanco y negro
+   Tokens como "r g b" para que Tailwind soporte modificadores de opacidad
+   (/10, /20, /50, etc.). La tinta de marca se invierte entre claro y oscuro;
+   el color queda reservado para estados (success, warning, danger, info).
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── MODO CLARO (por defecto) ──────────────────────────────────────── */
 :root {
-  --bia-blue-rgb:         240 245 255;   /* #f0f5ff  – fondo suave azulado   */
-  --bia-blue-mid-rgb:     255 255 255;   /* #ffffff  – tarjetas / contenedores */
-  --bia-gray-rgb:         82  90  114;   /* #525a72                          */
-  --bia-gray-light-rgb:   76  90  112;   /* #4c5a70  – más oscuro para contraste */
-  --bia-aqua-rgb:         5  130 110;    /* #05826e  – teal oscuro legible   */
-  --bia-purple-rgb:       71  40 239;    /* #4728ef                          */
-  --bia-purple-light-rgb: 222 222 249;   /* #dedef9                          */
+  --background:             242 242 247;   /* #f2f2f7 */
+  --foreground:             10 10 10;      /* #0a0a0a */
+  --card:                   255 255 255;
+  --card-foreground:        10 10 10;
+  --popover:                255 255 255;
+  --popover-foreground:     10 10 10;
+  --primary:                10 10 10;
+  --primary-foreground:     255 255 255;
+  --secondary:              233 233 238;   /* #e9e9ee */
+  --secondary-foreground:   10 10 10;
+  --muted:                  233 233 238;
+  --muted-foreground:       107 107 114;   /* #6b6b72 */
+  --accent:                 233 233 238;
+  --accent-foreground:      10 10 10;
+  --destructive:            220 38 38;
+  --destructive-foreground: 255 255 255;
+  --border:                 209 209 214;   /* #d1d1d6 */
+  --input:                  209 209 214;
+  --ring:                   10 10 10;
+  --sidebar:                255 255 255;
+  --sidebar-foreground:     107 107 114;
 
-  /* Componentes shadcn – modo claro */
-  --background:           220 40% 98%;
-  --foreground:           220 100% 10%;
-  --card:                 0 0% 100%;
-  --card-foreground:      220 100% 10%;
-  --popover:              0 0% 100%;
-  --popover-foreground:   220 100% 10%;
-  --primary:              172 93% 40%;
-  --primary-foreground:   220 100% 10%;
-  --secondary:            220 25% 92%;
-  --secondary-foreground: 220 60% 20%;
-  --muted:                220 25% 94%;
-  --muted-foreground:     220 15% 40%;
-  --accent:               252 85% 55%;
-  --accent-foreground:    0 0% 100%;
-  --destructive:          0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
-  --border:               220 20% 84%;
-  --input:                0 0% 100%;
-  --ring:                 172 93% 40%;
-  --sidebar:              220 35% 95%;
-  --sidebar-foreground:   220 20% 35%;
-  --sidebar-primary:      172 93% 40%;
-  --sidebar-primary-foreground: 220 100% 10%;
-  --sidebar-accent:       172 93% 40%;
-  --sidebar-accent-foreground: 172 93% 40%;
-  --sidebar-border:       220 20% 87%;
-  --sidebar-ring:         172 93% 40%;
-  --radius:               0.75rem;
+  --brand:                  10 10 10;
+  --brand-foreground:       255 255 255;
+  --track:                  229 229 234;   /* #e5e5ea */
+
+  /* Semánticos */
+  --success:                5 150 105;     /* #059669 */
+  --warning:                180 83 9;      /* #b45309 */
+  --danger:                 220 38 38;     /* #dc2626 */
+  --info:                   37 99 235;     /* #2563eb */
+  --orange:                 194 65 12;     /* #c2410c */
+
+  /* Capa iOS · material cristal */
+  --glass:                  rgba(255, 255, 255, 0.66);
+  --glass-strong:           rgba(255, 255, 255, 0.88);
+  --glass-bar:              rgba(255, 255, 255, 0.92);
+  --glass-border:           rgba(255, 255, 255, 0.8);
+  --glass-hi:               rgba(255, 255, 255, 0.95);
+  --shadow:                 0 10px 32px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --blob-1:                 rgba(255, 255, 255, 0.95);
+  --blob-2:                 rgba(196, 196, 204, 0.8);
+  --blob-3:                 rgba(224, 224, 230, 0.9);
+
+  --radius:                 0.75rem;
+  --r-card:                 28px;
+  color-scheme: light;
 }
 
 /* ── MODO OSCURO ───────────────────────────────────────────────────── */
 .dark {
-  --bia-blue-rgb:         0   16  53;    /* #001035 */
-  --bia-blue-mid-rgb:     10  27  77;    /* #0a1b4d */
-  --bia-gray-rgb:         82  90  114;   /* #525a72 */
-  --bia-gray-light-rgb:   136 146 164;   /* #8892a4 */
-  --bia-aqua-rgb:         8  221 188;    /* #08ddbc */
-  --bia-purple-rgb:       71  40 239;    /* #4728ef */
-  --bia-purple-light-rgb: 222 222 249;   /* #dedef9 */
+  --background:             10 10 10;
+  --foreground:             255 255 255;
+  --card:                   28 28 30;      /* #1c1c1e */
+  --card-foreground:        255 255 255;
+  --popover:                28 28 30;
+  --popover-foreground:     255 255 255;
+  --primary:                255 255 255;
+  --primary-foreground:     10 10 10;
+  --secondary:              44 44 46;      /* #2c2c2e */
+  --secondary-foreground:   255 255 255;
+  --muted:                  44 44 46;
+  --muted-foreground:       152 152 159;   /* #98989f */
+  --accent:                 58 58 60;      /* #3a3a3c */
+  --accent-foreground:      255 255 255;
+  --destructive:            239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border:                 58 58 60;
+  --input:                  58 58 60;
+  --ring:                   255 255 255;
+  --sidebar:                28 28 30;
+  --sidebar-foreground:     152 152 159;
 
-  --background:           220 100% 10%;
-  --foreground:           0 0% 100%;
-  --card:                 223 77% 17%;
-  --card-foreground:      0 0% 100%;
-  --popover:              223 77% 17%;
-  --popover-foreground:   0 0% 100%;
-  --primary:              172 93% 45%;
-  --primary-foreground:   220 100% 10%;
-  --secondary:            223 16% 38%;
-  --secondary-foreground: 0 0% 100%;
-  --muted:                223 25% 18%;
-  --muted-foreground:     220 14% 59%;
-  --accent:               252 85% 55%;
-  --accent-foreground:    0 0% 100%;
-  --destructive:          0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
-  --border:               223 16% 28%;
-  --input:                223 77% 14%;
-  --ring:                 172 93% 45%;
-  --sidebar:              220 100% 10%;
-  --sidebar-foreground:   220 14% 59%;
-  --sidebar-primary:      172 93% 45%;
-  --sidebar-primary-foreground: 220 100% 10%;
-  --sidebar-accent:       172 93% 45%;
-  --sidebar-accent-foreground: 172 93% 45%;
-  --sidebar-border:       223 16% 22%;
-  --sidebar-ring:         172 93% 45%;
+  --brand:                  255 255 255;
+  --brand-foreground:       10 10 10;
+  --track:                  44 44 46;
+
+  --success:                52 211 153;    /* #34d399 */
+  --warning:                250 204 21;    /* #facc15 */
+  --danger:                 248 113 113;   /* #f87171 */
+  --info:                   96 165 250;    /* #60a5fa */
+  --orange:                 251 146 60;    /* #fb923c */
+
+  --glass:                  rgba(44, 44, 48, 0.55);
+  --glass-strong:           rgba(44, 44, 48, 0.82);
+  --glass-bar:              rgba(28, 28, 30, 0.94);
+  --glass-border:           rgba(255, 255, 255, 0.12);
+  --glass-hi:               rgba(255, 255, 255, 0.16);
+  --shadow:                 0 12px 36px rgba(0, 0, 0, 0.5);
+  --blob-1:                 rgba(58, 58, 64, 0.55);
+  --blob-2:                 rgba(42, 42, 48, 0.6);
+  --blob-3:                 rgba(74, 74, 82, 0.45);
+
+  color-scheme: dark;
 }
 
 @layer base {
   * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: "Open Sauce One", var(--font-sans), Inter, system-ui, sans-serif;
+  }
+
+  /* Fondo: manchas grises suaves que el cristal desenfoca */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(560px 560px at -3% -4%, var(--blob-1), transparent 70%),
+      radial-gradient(520px 520px at 103% 20%, var(--blob-2), transparent 70%),
+      radial-gradient(460px 460px at 35% 105%, var(--blob-3), transparent 70%);
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   MODO CLARO — Overrides comprehensivos
-   Usamos :root:not(.dark) para que JAMÁS afecten el modo oscuro.
-   Estas reglas están fuera de @layer para tener mayor precedencia
-   sobre las utilidades de Tailwind.
-   ═══════════════════════════════════════════════════════════════════════ */
+@layer components {
+  /* Tarjeta de cristal (equivale a .card del template) */
+  .glass,
+  .glass-strong {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-card);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    backdrop-filter: blur(28px) saturate(170%);
+    box-shadow: var(--shadow), inset 0 1px 0 var(--glass-hi);
+  }
+  .glass-strong {
+    background: var(--glass-strong);
+  }
 
-/* ── 1. FONDOS OSCUROS → FONDOS CLAROS ─────────────────────────────── */
-:root:not(.dark) .bg-\[\#001035\] {
-  background-color: hsl(var(--card));
-  box-shadow: 0 1px 3px 0 rgb(0 16 53 / 0.07), 0 1px 2px -1px rgb(0 16 53 / 0.05);
-}
-:root:not(.dark) .bg-\[\#0A1B4D\],
-:root:not(.dark) .bg-\[\#0a1b4d\] {
-  background-color: hsl(var(--secondary));
-}
-:root:not(.dark) .bg-\[\#0a1628\] {
-  background-color: hsl(220 20% 88%);   /* track de barra de progreso */
-}
-:root:not(.dark) .bg-\[\#0f1729\] {
-  background-color: hsl(var(--popover));
-}
+  /* Superficie de cristal sin forma propia (barra superior, panel lateral, navegación) */
+  .glass-bar {
+    background: var(--glass-bar);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(28px) saturate(180%);
+  }
 
-/* ── 2. TEXTO BLANCO → TEXTO LEGIBLE (global, excepciones abajo) ────── */
-/* "text-white" era legible sobre fondos oscuros. En modo claro
-    los fondos se vuelven blancos → el texto desaparece.            */
-:root:not(.dark) .text-white {
-  color: hsl(var(--foreground));
-}
-/* Restaurar blanco solo donde el fondo sigue siendo oscuro en modo claro */
-:root:not(.dark) .bg-bia-aqua   .text-white,
-:root:not(.dark) .bg-bia-purple .text-white,
-:root:not(.dark) [class*="bg-emerald-"] .text-white,
-:root:not(.dark) [class*="bg-red-"]     .text-white,
-:root:not(.dark) [class*="bg-blue-"]    .text-white {
-  color: #ffffff;
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass,
+    .glass-strong,
+    .glass-bar {
+      background: rgb(var(--card));
+    }
+  }
 }
 
-/* ── 3. COLORES HARDCODEADOS BIA → EQUIVALENTES LEGIBLES ───────────── */
-
-/* Aqua como texto: muy claro sobre blanco (#08DDBC) → teal oscuro */
-:root:not(.dark) .text-\[\#08DDBC\],
-:root:not(.dark) .text-\[\#08ddbc\] {
-  color: rgb(var(--bia-aqua-rgb));
-}
-
-/* Grises BIA: legibles en oscuro, pero bajo contraste en claro */
-:root:not(.dark) .text-\[\#8892A4\],
-:root:not(.dark) .text-\[\#8892a4\] {
-  color: hsl(var(--muted-foreground));
-}
-:root:not(.dark) .text-\[\#525A72\],
-:root:not(.dark) .text-\[\#525a72\] {
-  color: hsl(220 15% 38%);
-}
-
-/* Purple-light (#DEDEF9): blanco lavanda, invisible sobre fondo claro */
-:root:not(.dark) .text-\[\#DEDEF9\],
-:root:not(.dark) .text-\[\#dedef9\] {
-  color: hsl(252 65% 42%);
-}
-
-/* ── 4. COLORES TAILWIND CLAROS → EQUIVALENTES CON CONTRASTE ────────── */
-/* Estos colores se veían bien sobre fondos oscuros pero son invisibles
-   sobre fondos blancos en modo claro.                                 */
-
-/* Verdes claros → verde oscuro */
-:root:not(.dark) .text-emerald-300,
-:root:not(.dark) .text-emerald-400 {
-  color: #059669;   /* emerald-600 */
-}
-/* Rojos claros → rojo oscuro */
-:root:not(.dark) .text-red-300,
-:root:not(.dark) .text-red-400 {
-  color: #dc2626;   /* red-600 */
-}
-/* Amarillos claros → ámbar oscuro */
-:root:not(.dark) .text-yellow-300,
-:root:not(.dark) .text-yellow-400 {
-  color: #b45309;   /* amber-700 */
-}
-/* Azules claros → azul oscuro */
-:root:not(.dark) .text-blue-300,
-:root:not(.dark) .text-blue-400 {
-  color: #2563eb;
-}
-
-/* ── 5. BORDES BLANCOS/TRANSPARENTES → BORDES VISIBLES ─────────────── */
-:root:not(.dark) .border-white\/5,
-:root:not(.dark) .border-white\/10,
-:root:not(.dark) .border-white\/15,
-:root:not(.dark) .border-white\/20,
-:root:not(.dark) .border-white\/25,
-:root:not(.dark) .border-white\/30 {
-  border-color: hsl(var(--border));
-}
-
-/* Bordes grises BIA con opacidad */
-:root:not(.dark) .border-\[\#525A72\]\/10,
-:root:not(.dark) .border-\[\#525a72\]\/10,
-:root:not(.dark) .border-\[\#525A72\]\/20,
-:root:not(.dark) .border-\[\#525a72\]\/20,
-:root:not(.dark) .border-\[\#525A72\]\/30,
-:root:not(.dark) .border-\[\#525a72\]\/30 {
-  border-color: hsl(var(--border));
-}
-
-/* ── 6. HOVER OSCUROS → HOVER CLAROS ───────────────────────────────── */
-:root:not(.dark) .hover\:bg-\[\#001035\]:hover {
-  background-color: hsl(var(--secondary));
-}
-:root:not(.dark) .hover\:text-white:hover {
-  color: hsl(var(--foreground));
-}
-
-/* ── 7. DIVISORES CON OPACIDAD BLANCA ──────────────────────────────── */
-:root:not(.dark) .divide-white\/10 > :not([hidden]) ~ :not([hidden]),
-:root:not(.dark) .divide-white\/20 > :not([hidden]) ~ :not([hidden]) {
-  border-color: hsl(var(--border));
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
