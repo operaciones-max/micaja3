@@ -38,14 +38,6 @@ export function Header({ serverSession }: { serverSession: Session }) {
       <div className="hidden md:flex md:flex-1 md:items-center md:justify-end md:gap-3">
         <RoleBadge rol={rol} />
         <ThemeToggle />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => window.open("https://turnos.bia.app", "_blank")}
-          className="hidden sm:flex items-center gap-1.5 border-bia-aqua/40 text-bia-aqua hover:bg-bia-aqua/10"
-        >
-          <span className="text-xs font-bold">📋 App Turnos</span>
-        </Button>
         <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: "/login" })}>
           <LogOut className="mr-2 h-4 w-4" />
           Salir

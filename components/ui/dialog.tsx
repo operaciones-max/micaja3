@@ -47,13 +47,17 @@ function DialogContent({
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
 }) {
+  // `sm:max-w-sm` es el ancho por defecto. Si quien llama pide su propio max-w-* se respeta:
+  // sin esto, el `sm:max-w-sm` le ganaba a un `max-w-5xl` sin prefijo y el contenido quedaba cortado.
+  const anchoPropio = typeof className === "string" && /(?:^|\s)(?:[a-z0-9]+:)*max-w-/.test(className)
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-[28px] bg-popover/85 p-4 text-sm text-popover-foreground shadow-[var(--shadow)] backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-foreground/10 outline-none sm:max-w-sm",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-[28px] bg-popover/85 p-4 text-sm text-popover-foreground shadow-[var(--shadow)] backdrop-blur-2xl backdrop-saturate-150 ring-1 ring-foreground/10 outline-none",
+          !anchoPropio && "sm:max-w-sm",
           className
         )}
         {...props}

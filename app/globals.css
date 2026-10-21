@@ -209,6 +209,33 @@
     .glass-bar { background: rgb(var(--card)); }
   }
 
+  /* ── Fila de factura (components/facturas/lista-facturas.tsx) ─────────────
+     Móvil: proveedor + valor / detalle / estado + acciones (el "pie" agrupa estado y acciones).
+     Escritorio: una sola línea con columnas fijas (el pie desaparece con display: contents)
+     para que valor y estado queden alineados entre filas. */
+  .factura-fila {
+    display: grid;
+    align-items: center;
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "main valor" "meta meta" "pie pie" "det det";
+  }
+  .factura-fila[data-sel] {
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+    grid-template-areas: "chk main valor" "chk meta meta" "chk pie pie" "det det det";
+  }
+  @media (min-width: 768px) {
+    .factura-fila {
+      grid-template-columns: minmax(0, 1fr) 7.5rem 7rem 10rem;
+      grid-template-areas: "main valor estado acciones" "meta valor estado acciones" "det det det det";
+    }
+    .factura-fila[data-sel] {
+      grid-template-columns: 1.25rem minmax(0, 1fr) 7.5rem 7rem 10rem;
+      grid-template-areas: "chk main valor estado acciones" "chk meta valor estado acciones" "det det det det det";
+    }
+  }
+
   /* ── Entrada de página: desenfoque → nítido, en cascada ───────────── */
   .page-enter > * { animation: rise 0.8s var(--ease) backwards; }
   .page-enter > *:nth-child(2) { animation-delay: 70ms; }
@@ -298,6 +325,57 @@
 ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) { z-index: 2; }
+
+/* ── Íconos de navegación: una micro-animación por ícono ──────────────────
+   Se disparan con el cursor sobre `.nav-hover` (barra lateral) o cuando un `.nav-active`
+   pasa a ser la página actual (barra móvil). Ver components/layout/nav-icons.tsx */
+@keyframes ni-draw { from { stroke-dashoffset: 1.3; } to { stroke-dashoffset: 0; } }
+@keyframes ni-pop { 0% { transform: scale(0.5); } 60% { transform: scale(1.14); } 100% { transform: scale(1); } }
+@keyframes ni-fly {
+  0% { transform: translate(0, 0); opacity: 1; }
+  45% { transform: translate(5px, -5px); opacity: 0; }
+  46% { transform: translate(-5px, 5px); opacity: 0; }
+  100% { transform: translate(0, 0); opacity: 1; }
+}
+@keyframes ni-grow { from { transform: scaleY(0.15); } to { transform: scaleY(1); } }
+@keyframes ni-drop { 0% { transform: translateY(-4px); } 55% { transform: translateY(1px); } 100% { transform: translateY(0); } }
+@keyframes ni-tilt { 0% { transform: rotate(0); } 30% { transform: rotate(-9deg); } 65% { transform: rotate(6deg); } 100% { transform: rotate(0); } }
+@keyframes ni-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-2.4px); } }
+@keyframes ni-wave { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-3.2px); } }
+
+.nav-ico * { transform-box: fill-box; transform-origin: center; }
+.nav-ico .l1, .nav-ico .l2, .nav-ico .ck { stroke-dasharray: 1 1; stroke-dashoffset: 0; }
+.nav-ico .b1, .nav-ico .b2, .nav-ico .b3 { transform-origin: 50% 100%; }
+.nav-ico .beam { transform-box: view-box; transform-origin: 12px 8px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico {
+    --nav-t: 0.6s var(--spring) backwards;
+  }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="dashboard"] .q1 { animation: ni-pop var(--nav-t); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="dashboard"] .q2 { animation: ni-pop var(--nav-t) 60ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="dashboard"] .q3 { animation: ni-pop var(--nav-t) 120ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="dashboard"] .q4 { animation: ni-pop var(--nav-t) 180ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="zona"] .pin { animation: ni-drop var(--nav-t); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="zona"] .dot { animation: ni-pop var(--nav-t) 140ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="envios"] .plane { animation: ni-fly 0.75s var(--ease); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="facturas"] .l1 { animation: ni-draw 0.5s var(--ease) backwards; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="facturas"] .l2 { animation: ni-draw 0.5s var(--ease) 140ms backwards; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="gastos"] .l1 { animation: ni-draw 0.5s var(--ease) backwards; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="gastos"] .l2 { animation: ni-draw 0.5s var(--ease) 140ms backwards; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="reporte"] .b1 { animation: ni-grow var(--nav-t); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="reporte"] .b2 { animation: ni-grow var(--nav-t) 80ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="reporte"] .b3 { animation: ni-grow var(--nav-t) 160ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="usuarios"] .h1 { animation: ni-pop var(--nav-t); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="usuarios"] .h2 { animation: ni-pop var(--nav-t) 110ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="legalizaciones"] .beam { animation: ni-tilt 0.9s var(--ease); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="reportes"] .ck { animation: ni-draw 0.55s var(--ease) 80ms backwards; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="inicio"] .roof { animation: ni-hop 0.55s var(--spring); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="entregas"] .lid { animation: ni-hop 0.6s var(--spring); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="mas"] .d1 { animation: ni-wave 0.6s var(--spring); }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="mas"] .d2 { animation: ni-wave 0.6s var(--spring) 70ms; }
+  :is(.nav-hover:hover, .nav-active[aria-current="page"]) .nav-ico[data-ico="mas"] .d3 { animation: ni-wave 0.6s var(--spring) 140ms; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

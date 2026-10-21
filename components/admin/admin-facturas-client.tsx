@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Check, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -19,16 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { FacturaImagenModal } from "@/components/factura-imagen-modal";
 import { FacturaEditDialog } from "@/components/coordinador/factura-edit-dialog";
-import { etiquetaZona } from "@/lib/coordinador-zona";
-import { facturaImageUrlForDisplay } from "@/lib/drive-image-url";
 import { formatCOP, parseCOPString, parseSheetDate } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { SIN_FILTRO } from "@/lib/filter-select";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
+import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, SinFacturas } from "@/components/facturas/lista-facturas";
 
 type FacturaRow = Record<string, unknown>;
 
@@ -393,145 +392,65 @@ export function AdminFacturasClient() {
       )}
 
       <Card className="text-foreground">
-        <CardContent className="overflow-x-auto pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-8"></TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Responsable</TableHead>
-                <TableHead>Zona</TableHead>
-                <TableHead>Proveedor</TableHead>
-                <TableHead>NIT</TableHead>
-                <TableHead>Servicio</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-center">Imagen</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={12}>
-                    <div className="h-6 animate-pulse rounded bg-bia-blue-mid" />
-                  </TableCell>
-                </TableRow>
-              ) : filtradas.length ? (
-                filtradas.map((f, i) => {
-                  const id = String(getCellCaseInsensitive(f, "ID_Factura", "ID"));
-                  const est = facturaEstado(f).toLowerCase();
-                  const sector = String(getCellCaseInsensitive(f, "Sector") || "");
-                  const imgSrc = facturaImageUrlForDisplay(
-                    String(getCellCaseInsensitive(f, "Adjuntar_Factura") || ""),
-                    String(getCellCaseInsensitive(f, "URL", "ImagenURL") || ""),
-                    String(getCellCaseInsensitive(f, "DriveFileId") || "")
-                  );
-                  return (
-                    <TableRow key={`${id}-${i}`}>
-                      <TableCell className="px-2">
-                        {est === "completada" ? (
-                          <input
-                            type="checkbox"
-                            checked={seleccionReabrir.has(id)}
-                            onChange={() => toggleSeleccionReabrir(id)}
-                            className="h-4 w-4 cursor-pointer accent-bia-aqua"
-                            aria-label={`Seleccionar factura ${id} para reabrir`}
-                          />
+        <CardContent className="pt-6">
+          {loading ? (
+            <FilasEsqueleto />
+          ) : filtradas.length ? (
+            <ListaFacturas>
+              {filtradas.map((f, i) => {
+                const id = String(getCellCaseInsensitive(f, "ID_Factura", "ID"));
+                const est = facturaEstado(f).toLowerCase();
+                return (
+                  <FacturaFila
+                    key={`${id}-${i}`}
+                    f={f}
+                    indice={i}
+                    mostrarResponsable
+                    mostrarZona
+                    conSeleccion
+                    seleccion={
+                      est === "completada"
+                        ? {
+                            checked: seleccionReabrir.has(id),
+                            onToggle: () => toggleSeleccionReabrir(id),
+                            label: `Seleccionar factura ${id} para reabrir`,
+                          }
+                        : undefined
+                    }
+                    onVerImagen={setImagenModal}
+                    acciones={
+                      <>
+                        {est === "pendiente" ? (
+                          <>
+                            <AccionIcono tono="ok" label="Aprobar" onClick={() => void aprobar(id)}>
+                              <Check />
+                            </AccionIcono>
+                            <AccionIcono tono="peligro" label="Rechazar" onClick={() => setRejectId(id)}>
+                              <X />
+                            </AccionIcono>
+                          </>
                         ) : null}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs">{facturaFecha(f) || "—"}</TableCell>
-                      <TableCell className="text-sm">{getCellCaseInsensitive(f, "Responsable")}</TableCell>
-                      <TableCell className="text-sm">{etiquetaZona(sector)}</TableCell>
-                      <TableCell className="max-w-[140px] truncate text-sm">
-                        {getCellCaseInsensitive(f, "Proveedor", "Razon_Social") || "—"}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-xs">
-                        {getCellCaseInsensitive(f, "NIT", "Nit_Factura") || "—"}
-                      </TableCell>
-                      <TableCell className="max-w-[120px] truncate text-xs">
-                        {getCellCaseInsensitive(f, "ServicioDeclarado", "Tipo_servicio") || "—"}
-                      </TableCell>
-                      <TableCell className="tabular-nums text-sm">
-                        {formatCOP(parseCOPString(getCellCaseInsensitive(f, "Valor", "Monto_Factura")))}
-                      </TableCell>
-                      <TableCell className="text-xs">{getCellCaseInsensitive(f, "TipoFactura", "Tipo_Factura") || "—"}</TableCell>
-                      <TableCell className="text-xs">{facturaEstado(f)}</TableCell>
-                      <TableCell className="text-center">
-                        {imgSrc ? (
-                          <button
-                            type="button"
-                            onClick={() => setImagenModal(imgSrc)}
-                            className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-foreground"
-                            title="Ver imagen"
-                          >
-                            🖼️ Ver
-                          </button>
-                        ) : (
-                          <span className="text-xs text-bia-gray" title="Sin imagen disponible">
-                            Sin imagen
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex flex-wrap justify-end gap-1">
-                          {est === "pendiente" ? (
-                            <>
-                              <Button
-                                type="button"
-                                size="sm"
-                                className="h-7 bg-bia-aqua px-2 text-xs font-semibold text-bia-blue hover:bg-bia-aqua/90"
-                                onClick={() => void aprobar(id)}
-                              >
-                                ✓
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="destructive"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => setRejectId(id)}
-                              >
-                                ✗
-                              </Button>
-                            </>
-                          ) : null}
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-7 border-bia-gray/30 px-2 text-xs"
-                            onClick={() => {
-                              setEditar(f);
-                              setDialogOpen(true);
-                            }}
-                          >
-                            ✏️ Editar
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="h-7 border-bia-gray/30 px-2 text-xs text-danger"
-                            onClick={() => setConfirmEliminarId(id)}
-                          >
-                            🗑️
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={12} className="text-bia-gray">
-                    Sin resultados con los filtros actuales
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                        <AccionIcono
+                          label="Editar"
+                          onClick={() => {
+                            setEditar(f);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <Pencil />
+                        </AccionIcono>
+                        <AccionIcono tono="suave" label="Eliminar" onClick={() => setConfirmEliminarId(id)}>
+                          <Trash2 />
+                        </AccionIcono>
+                      </>
+                    }
+                  />
+                );
+              })}
+            </ListaFacturas>
+          ) : (
+            <SinFacturas>Sin resultados con los filtros actuales</SinFacturas>
+          )}
           <div className="mt-4 flex flex-wrap gap-6 text-sm text-bia-gray-light">
             <span>Total facturas (filtradas): {filtradas.length}</span>
             <span>Total aprobadas + completadas: {formatCOP(totalAprobadas)}</span>
