@@ -7,7 +7,15 @@ import EnviarFxModal from "@/components/reporte/EnviarFxModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckCircle2, TriangleAlert } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -22,6 +30,7 @@ import { AuditorFacturasPanel, type PanelFactura } from "@/components/shared/aud
 
 type FacturaRow = Record<string, unknown>;
 type ReporteRow = Record<string, string>;
+type ResultadoEnvio = { ok: boolean; mensaje: string; facturas?: number; total?: number };
 
 function facturaEstadoEffective(f: FacturaRow): string {
   return String(getCellCaseInsensitive(f, "Estado", "Legalizado", "Verificado") || "Pendiente");
@@ -49,7 +58,9 @@ export function ReporteCoordinadorClient() {
   const [signOpen, setSignOpen] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [yaEnviando, setYaEnviando] = useState(false);
-  const [okMsg, setOkMsg] = useState("");
+  // El resultado se conserva al cerrar para que el texto no desaparezca durante la animación de salida
+  const [resultadoEnvio, setResultadoEnvio] = useState<ResultadoEnvio | null>(null);
+  const [resultadoAbierto, setResultadoAbierto] = useState(false);
 
   const [repLoading, setRepLoading] = useState(true);
   const [reportes, setReportes] = useState<ReporteRow[]>([]);
@@ -78,7 +89,6 @@ export function ReporteCoordinadorClient() {
 
   async function cargarDisponibles() {
     setLoading(true);
-    setOkMsg("");
     try {
       const q = new URLSearchParams({
         zonaSector: sector,
@@ -173,12 +183,16 @@ export function ReporteCoordinadorClient() {
     setSelected(next);
   }
 
+  function mostrarResultado(r: ResultadoEnvio) {
+    setResultadoEnvio(r);
+    setResultadoAbierto(true);
+  }
+
   async function onFirmaLista(firmaDataUrl: string) {
     if (yaEnviando || !selectedRows.length || superaLimite) return;
     setYaEnviando(true);
     setSignOpen(false);
     setProcesando(true);
-    setOkMsg("");
 
     const user = data?.user;
     const userArea = String(user?.area || "");
@@ -205,19 +219,28 @@ export function ReporteCoordinadorClient() {
 
       if (!res.ok) {
         const err = (await res.json().catch(() => ({}))) as { error?: string };
-        setOkMsg(err.error || "Error al guardar el reporte");
+        mostrarResultado({ ok: false, mensaje: err.error || "Error al guardar el reporte" });
         return;
       }
 
-      setOkMsg("✅ Reporte enviado al administrador para su firma");
+      mostrarResultado({
+        ok: true,
+        mensaje: "Tu reporte quedó pendiente de la firma del administrador. Cuando lo firme lo verás como «Firmado» en Mis reportes.",
+        facturas: selectedRows.length,
+        total: totalSeleccionado,
+      });
+      // Las facturas legalizadas salen de la lista para que no se puedan volver a enviar
+      const enviadas = new Set(facturasIds);
+      setLista((prev) => prev.filter((f) => !enviadas.has(String(getCellCaseInsensitive(f, "ID_Factura", "ID")))));
       setSelected(new Set());
       setTab("pdfs");
       await cargarReportes();
     } catch (e) {
       console.error("onFirmaLista error:", e);
-      setOkMsg("Error al enviar el reporte. Intenta de nuevo.");
+      mostrarResultado({ ok: false, mensaje: "Error al enviar el reporte. Intenta de nuevo." });
     } finally {
       setProcesando(false);
+      setYaEnviando(false);
     }
   }
 
@@ -272,6 +295,37 @@ export function ReporteCoordinadorClient() {
         />
       ) : null}
       {errEliminar ? <p className="text-sm text-danger">{errEliminar}</p> : null}
+      {/* Resultado del envío: vive fuera de las pestañas porque al enviar se pasa a «Mis reportes» */}
+      <Dialog open={resultadoAbierto} onOpenChange={setResultadoAbierto}>
+        <DialogContent className="text-foreground">
+          <DialogHeader className="items-center text-center">
+            {resultadoEnvio?.ok ? (
+              <CheckCircle2 className="h-10 w-10 text-success" strokeWidth={1.6} aria-hidden />
+            ) : (
+              <TriangleAlert className="h-10 w-10 text-danger" strokeWidth={1.6} aria-hidden />
+            )}
+            <DialogTitle>{resultadoEnvio?.ok ? "Reporte enviado" : "No se pudo enviar"}</DialogTitle>
+            <DialogDescription>{resultadoEnvio?.mensaje}</DialogDescription>
+          </DialogHeader>
+          {resultadoEnvio?.ok ? (
+            <dl className="grid grid-cols-2 gap-3 text-center text-sm">
+              <div className="glass-strong p-3">
+                <dt className="text-xs text-muted-foreground">Facturas</dt>
+                <dd className="font-semibold tabular-nums">{resultadoEnvio.facturas}</dd>
+              </div>
+              <div className="glass-strong p-3">
+                <dt className="text-xs text-muted-foreground">Total</dt>
+                <dd className="font-semibold tabular-nums">{formatCOP(resultadoEnvio.total ?? 0)}</dd>
+              </div>
+            </dl>
+          ) : null}
+          <DialogFooter>
+            <Button type="button" onClick={() => setResultadoAbierto(false)}>
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="flex flex-wrap gap-2">
         <Button
           type="button"
@@ -466,7 +520,6 @@ export function ReporteCoordinadorClient() {
                 >
                   {yaEnviando ? "Enviando..." : "Firmar y enviar al administrador"}
                 </Button>
-                {okMsg ? <p className="text-sm text-success">{okMsg}</p> : null}
               </CardContent>
             </Card>
           </div>
