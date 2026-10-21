@@ -22,6 +22,7 @@ import {
   usuarioSheetUserActiveRaw,
 } from "@/lib/usuario-sheet-fields";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type BalanceApi = {
   responsable: string;
@@ -356,7 +357,7 @@ export function AdminUsuariosClient() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Usuarios</h1>
+          <h1 className="text-2xl font-bold text-foreground">Usuarios</h1>
           <p className="text-sm text-bia-gray-light">Hoja Usuarios (MiCaja) · balances desde Entregas y Facturas</p>
         </div>
         <Button
@@ -369,7 +370,7 @@ export function AdminUsuariosClient() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+        <Card className="text-foreground">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-bia-gray-light">Total (filtrado)</CardTitle>
           </CardHeader>
@@ -378,25 +379,25 @@ export function AdminUsuariosClient() {
             <p className="text-xs text-bia-gray">usuarios</p>
           </CardContent>
         </Card>
-        <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+        <Card className="text-foreground">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-bia-gray-light">Al día</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-emerald-400">{loading ? "—" : resumen.alDia}</p>
+            <p className="text-2xl font-bold text-success">{loading ? "—" : resumen.alDia}</p>
           </CardContent>
         </Card>
-        <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+        <Card className="text-foreground">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-bia-gray-light">No al día</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-red-400">{loading ? "—" : resumen.deuda}</p>
+            <p className="text-2xl font-bold text-danger">{loading ? "—" : resumen.deuda}</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
@@ -443,7 +444,7 @@ export function AdminUsuariosClient() {
         </CardContent>
       </Card>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardContent className="overflow-x-auto pt-6">
           <Table>
             <TableHeader>
@@ -472,7 +473,7 @@ export function AdminUsuariosClient() {
                   const sheetActive = activeFromSheet.get(row.email);
                   const cuentaActiva = sheetActive !== undefined ? sheetActive : true;
                   const balanceSubCls =
-                    bal > 0 ? "text-yellow-400" : bal < 0 ? "text-red-400" : "text-[#525A72]";
+                    bal > 0 ? "text-warning" : bal < 0 ? "text-danger" : "text-muted-foreground";
                   return (
                     <TableRow key={row.email}>
                       <TableCell className="font-medium">{row.responsable || "—"}</TableCell>
@@ -501,7 +502,7 @@ export function AdminUsuariosClient() {
                             className={`rounded-lg border px-2 py-1 text-xs ${
                               cuentaActiva
                                 ? "border-bia-aqua/30 text-bia-aqua hover:bg-bia-aqua/10"
-                                : "border-red-500/30 text-red-400 hover:bg-red-500/10"
+                                : "border-red-500/30 text-danger hover:bg-red-500/10"
                             }`}
                           >
                             {cuentaActiva ? "Activo" : "Inactivo"}
@@ -509,14 +510,14 @@ export function AdminUsuariosClient() {
                           <button
                             type="button"
                             onClick={() => abrirEditar(row.rec)}
-                            className="rounded-lg border border-bia-gray/30 px-2 py-1 text-xs text-bia-gray-light hover:bg-bia-gray/20 hover:text-white"
+                            className="rounded-lg border border-bia-gray/30 px-2 py-1 text-xs text-bia-gray-light hover:bg-bia-gray/20 hover:text-foreground"
                           >
                             Editar
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmEliminar(row.email)}
-                            className="rounded-lg border border-red-500/30 px-2 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                            className="rounded-lg border border-red-500/30 px-2 py-1 text-xs text-danger hover:bg-red-500/10"
                           >
                             Eliminar
                           </button>
@@ -538,119 +539,121 @@ export function AdminUsuariosClient() {
       </Card>
 
       {modalMode ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
-          onClick={() => { setModalMode(null); setModalError(""); }}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[#525A72]/30 bg-[#0A1B4D] p-6"
-            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => { setModalMode(null); setModalError(""); }}
           >
-            <h3 className="mb-4 font-semibold text-white">
-              {modalMode === "agregar" ? "Nuevo usuario" : "Editar usuario"}
-            </h3>
-            {modalError ? (
-              <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-red-400 dark:text-red-400">
-                <span className="mt-0.5 shrink-0 font-bold">⚠</span>
-                <span>{modalError}</span>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="max-h-[90vh] w-full max-w-md overflow-y-auto glass-strong p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-4 font-semibold text-foreground">
+                {modalMode === "agregar" ? "Nuevo usuario" : "Editar usuario"}
+              </h3>
+              {modalError ? (
+                <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-danger dark:text-danger">
+                  <span className="mt-0.5 shrink-0 font-bold">⚠</span>
+                  <span>{modalError}</span>
+                </div>
+              ) : null}
+              {(
+                [
+                  { label: "Nombre completo", key: "responsable" as const },
+                  { label: "Correo (@bia.app)", key: "email" as const },
+                  { label: "Cédula", key: "cedula" as const },
+                  { label: "Teléfono", key: "telefono" as const },
+                  { label: "Cargo", key: "cargo" as const },
+                ] as const
+              ).map((field) => (
+                <div key={field.key} className="mb-3">
+                  <label className="mb-1 block text-xs text-muted-foreground">{field.label}</label>
+                  <input
+                    value={formData[field.key]}
+                    onChange={(e) => setFormData((p) => ({ ...p, [field.key]: e.target.value }))}
+                    className="w-full glass px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+              ))}
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Rol</label>
+                <select
+                  value={formData.rol}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, rol: e.target.value as UsuarioForm["rol"] }))
+                  }
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="user">Usuario</option>
+                  <option value="coordinador">Coordinador</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
-            ) : null}
-            {(
-              [
-                { label: "Nombre completo", key: "responsable" as const },
-                { label: "Correo (@bia.app)", key: "email" as const },
-                { label: "Cédula", key: "cedula" as const },
-                { label: "Teléfono", key: "telefono" as const },
-                { label: "Cargo", key: "cargo" as const },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="mb-3">
-                <label className="mb-1 block text-xs text-[#8892A4]">{field.label}</label>
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Sector</label>
+                <select
+                  value={formData.sector}
+                  onChange={(e) => setFormData((p) => ({ ...p, sector: e.target.value }))}
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="Bogota">Bogotá</option>
+                  <option value="Costa Caribe">Costa Caribe</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Área</label>
                 <input
-                  value={formData[field.key]}
-                  onChange={(e) => setFormData((p) => ({ ...p, [field.key]: e.target.value }))}
-                  className="w-full rounded-xl border border-[#525A72]/30 bg-[#001035] px-3 py-2 text-sm text-white"
+                  value={formData.area}
+                  onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
                 />
               </div>
-            ))}
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-[#8892A4]">Rol</label>
-              <select
-                value={formData.rol}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, rol: e.target.value as UsuarioForm["rol"] }))
-                }
-                className="w-full rounded-xl border border-[#525A72]/30 bg-[#001035] px-3 py-2 text-sm text-white"
-              >
-                <option value="user">Usuario</option>
-                <option value="coordinador">Coordinador</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-[#8892A4]">Sector</label>
-              <select
-                value={formData.sector}
-                onChange={(e) => setFormData((p) => ({ ...p, sector: e.target.value }))}
-                className="w-full rounded-xl border border-[#525A72]/30 bg-[#001035] px-3 py-2 text-sm text-white"
-              >
-                <option value="Bogota">Bogotá</option>
-                <option value="Costa Caribe">Costa Caribe</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-[#8892A4]">Área</label>
-              <input
-                value={formData.area}
-                onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
-                className="w-full rounded-xl border border-[#525A72]/30 bg-[#001035] px-3 py-2 text-sm text-white"
-              />
-            </div>
-            <div className="mb-3 flex items-center gap-2">
-              <input
-                id="ua"
-                type="checkbox"
-                checked={formData.userActive}
-                onChange={(e) => setFormData((p) => ({ ...p, userActive: e.target.checked }))}
-                className="rounded border-bia-gray/40"
-              />
-              <label htmlFor="ua" className="text-sm text-bia-gray-light">
-                Cuenta activa
-              </label>
-            </div>
-            <div className="mb-4">
-              <label className="mb-1 block text-xs text-[#8892A4]">
-                PIN {modalMode === "editar" ? "(dejar vacío para no cambiar)" : ""}
-              </label>
-              <input
-                value={formData.pin}
-                onChange={(e) => setFormData((p) => ({ ...p, pin: e.target.value }))}
-                type="password"
-                autoComplete="new-password"
-                className="w-full rounded-xl border border-[#525A72]/30 bg-[#001035] px-3 py-2 text-sm text-white"
-              />
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => { setModalMode(null); setModalError(""); }}
-                className="rounded-xl bg-[#525A72]/20 px-4 py-2 text-sm text-[#8892A4]"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => void guardarUsuario()}
-                className="rounded-xl bg-bia-aqua px-4 py-2 text-sm font-semibold text-bia-blue"
-              >
-                {modalMode === "agregar" ? "Crear usuario" : "Guardar cambios"}
-              </button>
+              <div className="mb-3 flex items-center gap-2">
+                <input
+                  id="ua"
+                  type="checkbox"
+                  checked={formData.userActive}
+                  onChange={(e) => setFormData((p) => ({ ...p, userActive: e.target.checked }))}
+                  className="rounded border-bia-gray/40"
+                />
+                <label htmlFor="ua" className="text-sm text-bia-gray-light">
+                  Cuenta activa
+                </label>
+              </div>
+              <div className="mb-4">
+                <label className="mb-1 block text-xs text-muted-foreground">
+                  PIN {modalMode === "editar" ? "(dejar vacío para no cambiar)" : ""}
+                </label>
+                <input
+                  value={formData.pin}
+                  onChange={(e) => setFormData((p) => ({ ...p, pin: e.target.value }))}
+                  type="password"
+                  autoComplete="new-password"
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setModalMode(null); setModalError(""); }}
+                  className="rounded-xl bg-muted px-4 py-2 text-sm text-muted-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void guardarUsuario()}
+                  className="rounded-xl bg-bia-aqua px-4 py-2 text-sm font-semibold text-bia-blue"
+                >
+                  {modalMode === "agregar" ? "Crear usuario" : "Guardar cambios"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       ) : null}
     </div>
   );

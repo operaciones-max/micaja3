@@ -15,14 +15,15 @@ import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
 import { facturaImageUrlForDisplay } from "@/lib/drive-image-url";
 import { sheetANombreBiaTrue } from "@/lib/nueva-factura-validation";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type FacturaItem = Record<string, unknown>;
 
 function estadoClass(estado: string): string {
   const e = estado.toLowerCase();
-  if (e === "aprobada") return "border-emerald-700 text-emerald-300";
-  if (e === "rechazada") return "border-red-700 text-red-300";
-  return "border-yellow-700 text-yellow-300";
+  if (e === "aprobada") return "border-success/40 text-success";
+  if (e === "rechazada") return "border-danger/40 text-danger";
+  return "border-warning/40 text-warning";
 }
 
 const COLS = 12;
@@ -80,11 +81,11 @@ export function FacturasUsuarioClient() {
     if (qs.get("saved") !== "1") return null;
     const auto = qs.get("auto");
     if (auto === "aprobada") {
-      return { clase: "bg-[#08DDBC]/15 text-[#08DDBC] border-[#08DDBC]/30", texto: "Factura guardada y aprobada automáticamente" };
+      return { clase: "bg-foreground/10 text-foreground border-foreground/20", texto: "Factura guardada y aprobada automáticamente" };
     }
     if (auto === "pendiente") {
       return {
-        clase: "border-amber-500/30 bg-amber-500/10 text-amber-200",
+        clase: "border-amber-500/30 bg-amber-500/10 text-warning",
         texto: "Factura guardada. Pendiente de revisión por tu coordinador.",
       };
     }
@@ -102,7 +103,7 @@ export function FacturasUsuarioClient() {
         }}
         onSaved={() => void loadFacturas()}
       />
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Facturas</CardTitle>
           {bannerGuardado ? (
@@ -136,7 +137,7 @@ export function FacturasUsuarioClient() {
                 variant="outline"
                 size="sm"
                 onClick={() => { setDesde(""); setHasta(""); }}
-                className="border-white/20 text-gray-300"
+                className="border-border text-muted-foreground"
               >
                 Limpiar
               </Button>
@@ -211,7 +212,7 @@ export function FacturasUsuarioClient() {
                         </TableCell>
                         <TableCell>
                           {aBia ? (
-                            <Badge className="border-emerald-700 bg-emerald-950 text-emerald-200">BIA</Badge>
+                            <Badge className="border-success/40 bg-success/15 text-success">BIA</Badge>
                           ) : (
                             <span className="text-bia-gray">—</span>
                           )}
@@ -220,7 +221,7 @@ export function FacturasUsuarioClient() {
                         <TableCell>
                           <div className="flex flex-col items-start gap-1">
                             {esAutoAprobada ? (
-                              <span className="rounded-full border border-[#08DDBC]/20 bg-[#08DDBC]/10 px-2 py-0.5 text-xs text-[#08DDBC]">
+                              <span className="rounded-full border border-foreground/15 bg-foreground/10 px-2 py-0.5 text-xs text-foreground">
                                 ✓ Auto-aprobada
                               </span>
                             ) : null}
@@ -234,7 +235,7 @@ export function FacturasUsuarioClient() {
                             <button
                               type="button"
                               onClick={() => setImagenModal(imgSrc)}
-                              className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-white"
+                              className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-foreground"
                               title="Ver imagen"
                             >
                               🖼️ Ver
@@ -279,9 +280,11 @@ export function FacturasUsuarioClient() {
 
       <FacturaImagenModal src={imagenModal} onClose={() => setImagenModal(null)} />
 
-      <Link href="/facturas/nueva" className="fixed bottom-20 right-4 z-40">
-        <Button className="h-12 w-12 rounded-full bg-bia-aqua text-bia-blue font-semibold shadow-lg">+</Button>
-      </Link>
+      <Portal>
+        <Link href="/facturas/nueva" className="fixed bottom-28 right-4 z-40 md:bottom-8">
+          <Button className="h-12 w-12 rounded-full bg-bia-aqua text-bia-blue font-semibold shadow-lg">+</Button>
+        </Link>
+      </Portal>
     </div>
   );
 }

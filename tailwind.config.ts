@@ -1,5 +1,8 @@
 import type { Config } from "tailwindcss";
 
+/** Color respaldado por una variable CSS "r g b" (permite modificadores de opacidad: /10, /20…). */
+const v = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   darkMode: "class",
   content: [
@@ -10,70 +13,86 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Marca en blanco y negro: la tinta se invierte entre claro y oscuro.
+        brand: {
+          DEFAULT: v("brand"),
+          foreground: v("brand-foreground"),
+        },
+        // Alias heredados: apuntan a los tokens nuevos para que las clases `bia-*` existentes adopten el template.
         bia: {
-          // CSS variable–based so dark/light mode adapts automatically
-          blue:           "rgb(var(--bia-blue-rgb) / <alpha-value>)",
-          "blue-mid":     "rgb(var(--bia-blue-mid-rgb) / <alpha-value>)",
-          gray:           "rgb(var(--bia-gray-rgb) / <alpha-value>)",
-          "gray-light":   "rgb(var(--bia-gray-light-rgb) / <alpha-value>)",
-          aqua:           "rgb(var(--bia-aqua-rgb) / <alpha-value>)",
-          purple:         "rgb(var(--bia-purple-rgb) / <alpha-value>)",
-          "purple-light": "rgb(var(--bia-purple-light-rgb) / <alpha-value>)",
+          blue: v("background"),
+          "blue-mid": v("card"),
+          gray: v("muted-foreground"),
+          "gray-light": v("muted-foreground"),
+          aqua: v("brand"),
+          purple: v("brand"),
+          "purple-light": v("foreground"),
           white: "#FFFFFF",
         },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        border: v("border"),
+        input: v("input"),
+        ring: v("ring"),
+        background: v("background"),
+        foreground: v("foreground"),
+        track: v("track"),
+        // Colores semánticos: único uso de color (estados, saldos y alertas).
+        success: v("success"),
+        warning: v("warning"),
+        danger: v("danger"),
+        info: v("info"),
+        orange: v("orange"),
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: v("primary"),
+          foreground: v("primary-foreground"),
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: v("secondary"),
+          foreground: v("secondary-foreground"),
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: v("destructive"),
+          foreground: v("destructive-foreground"),
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: v("muted"),
+          foreground: v("muted-foreground"),
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: v("accent"),
+          foreground: v("accent-foreground"),
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: v("popover"),
+          foreground: v("popover-foreground"),
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: v("card"),
+          foreground: v("card-foreground"),
         },
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+          DEFAULT: v("sidebar"),
+          foreground: v("sidebar-foreground"),
+          border: v("border"),
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "1rem",
-        "2xl": "1rem",
+        xl: "1.25rem",
+        "2xl": "1.75rem",
       },
       fontFamily: {
-        sans: ["Open Sauce One", "var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "SF Pro Text",
+          "SF Pro Display",
+          "var(--font-sans)",
+          "Inter",
+          "system-ui",
+          "sans-serif",
+        ],
       },
     },
   },

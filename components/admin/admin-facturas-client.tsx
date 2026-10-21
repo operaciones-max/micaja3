@@ -262,11 +262,11 @@ export function AdminFacturasClient() {
       ) : null}
 
       <div>
-        <h1 className="text-2xl font-bold text-white">Todas las facturas</h1>
+        <h1 className="text-2xl font-bold text-foreground">Todas las facturas</h1>
         <p className="text-sm text-bia-gray-light">Administración · filtros y acciones</p>
       </div>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
@@ -345,7 +345,7 @@ export function AdminFacturasClient() {
       </Card>
 
       {(seleccionReabrir.size > 0 || completadasFiltradasIds.length > 0 || avisoReabrir) && (
-        <Card className="border-bia-aqua/30 bg-bia-blue-mid text-white">
+        <Card className="border-bia-aqua/30 text-foreground">
           <CardContent className="flex flex-wrap items-center gap-3 pt-4">
             {completadasFiltradasIds.length > 0 ? (
               <Button
@@ -368,7 +368,7 @@ export function AdminFacturasClient() {
                 <Button
                   type="button"
                   size="sm"
-                  className="h-8 bg-bia-aqua px-3 text-xs font-semibold text-bia-blue hover:bg-[#06C4A8]"
+                  className="h-8 bg-bia-aqua px-3 text-xs font-semibold text-bia-blue hover:bg-bia-aqua/90"
                   disabled={reabriendo}
                   onClick={() => setConfirmReabrir(true)}
                 >
@@ -392,7 +392,7 @@ export function AdminFacturasClient() {
         </Card>
       )}
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardContent className="overflow-x-auto pt-6">
           <Table>
             <TableHeader>
@@ -463,7 +463,7 @@ export function AdminFacturasClient() {
                           <button
                             type="button"
                             onClick={() => setImagenModal(imgSrc)}
-                            className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-white"
+                            className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-foreground"
                             title="Ver imagen"
                           >
                             🖼️ Ver
@@ -481,7 +481,7 @@ export function AdminFacturasClient() {
                               <Button
                                 type="button"
                                 size="sm"
-                                className="h-7 bg-bia-aqua px-2 text-xs font-semibold text-bia-blue hover:bg-[#06C4A8]"
+                                className="h-7 bg-bia-aqua px-2 text-xs font-semibold text-bia-blue hover:bg-bia-aqua/90"
                                 onClick={() => void aprobar(id)}
                               >
                                 ✓
@@ -513,7 +513,7 @@ export function AdminFacturasClient() {
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="h-7 border-bia-gray/30 px-2 text-xs text-red-300"
+                            className="h-7 border-bia-gray/30 px-2 text-xs text-danger"
                             onClick={() => setConfirmEliminarId(id)}
                           >
                             🗑️
@@ -541,7 +541,7 @@ export function AdminFacturasClient() {
       </Card>
 
       <Dialog open={!!rejectId} onOpenChange={(o) => !o && setRejectId(null)}>
-        <DialogContent className="border-bia-gray/20 bg-bia-blue-mid text-white">
+        <DialogContent className="border-bia-gray/20 bg-bia-blue-mid text-foreground">
           <DialogHeader>
             <DialogTitle>Motivo del rechazo</DialogTitle>
           </DialogHeader>

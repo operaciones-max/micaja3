@@ -201,12 +201,12 @@ export default function AgregarFacturaModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto border-white/10 bg-[#0f1729] text-white">
+      <DialogContent className="max-h-[92vh] overflow-y-auto border-border bg-popover text-foreground">
         <DialogHeader>
           <DialogTitle>Agregar Factura con OCR</DialogTitle>
         </DialogHeader>
 
-        {error && <div className="rounded bg-red-500/20 border border-red-500/50 p-3 text-sm text-red-300">{error}</div>}
+        {error && <div className="rounded bg-red-500/20 border border-red-500/50 p-3 text-sm text-danger">{error}</div>}
 
         {step === "upload" ? (
           <div className="space-y-4">
@@ -240,13 +240,13 @@ export default function AgregarFacturaModal({
         ) : (
           <div className="space-y-4">
             {preview && (
-              <div className="rounded border border-white/10 p-3 overflow-hidden max-h-[200px]">
+              <div className="rounded border border-border p-3 overflow-hidden max-h-[200px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={preview} alt="Vista previa" className="max-h-[180px] mx-auto rounded object-contain" />
               </div>
             )}
 
-            <div className="space-y-3 bg-white/5 p-3 rounded">
+            <div className="space-y-3 bg-foreground/5 p-3 rounded">
               <p className="text-sm font-medium">Datos extraídos por OCR:</p>
               <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                 <div>
@@ -254,7 +254,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.proveedor || ""}
                     onChange={(e) => setOcrData({ ...ocrData, proveedor: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -262,7 +262,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.nit || ""}
                     onChange={(e) => setOcrData({ ...ocrData, nit: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -270,7 +270,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.numFactura || ""}
                     onChange={(e) => setOcrData({ ...ocrData, numFactura: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -278,7 +278,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.fecha || ""}
                     onChange={(e) => setOcrData({ ...ocrData, fecha: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -286,7 +286,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.concepto || ""}
                     onChange={(e) => setOcrData({ ...ocrData, concepto: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -294,13 +294,13 @@ export default function AgregarFacturaModal({
                   <Input
                     value={ocrData.valor || ""}
                     onChange={(e) => setOcrData({ ...ocrData, valor: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 border-t border-white/10 pt-3">
+            <div className="space-y-3 border-t border-border pt-3">
               <p className="text-sm font-medium">Información del gasto:</p>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
@@ -308,7 +308,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={form.motivo}
                     onChange={(e) => setForm({ ...form, motivo: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -316,7 +316,7 @@ export default function AgregarFacturaModal({
                   <Input
                     value={form.centroCostos}
                     onChange={(e) => setForm({ ...form, centroCostos: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -325,7 +325,7 @@ export default function AgregarFacturaModal({
                     type="date"
                     value={form.fechaInicio}
                     onChange={(e) => setForm({ ...form, fechaInicio: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
                 <div>
@@ -334,7 +334,7 @@ export default function AgregarFacturaModal({
                     type="date"
                     value={form.fechaFin}
                     onChange={(e) => setForm({ ...form, fechaFin: e.target.value })}
-                    className="mt-1 bg-white/5 text-sm"
+                    className="mt-1 bg-foreground/5 text-sm"
                   />
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function AgregarFacturaModal({
         )}
 
         <DialogFooter className="flex gap-2 justify-end">
-          <Button onClick={handleClose} variant="outline" className="border-white/20 text-white hover:bg-white/5">
+          <Button onClick={handleClose} variant="outline" className="border-border text-foreground hover:bg-foreground/5">
             {step === "upload" ? "Cerrar" : "Volver"}
           </Button>
           {step === "edit" && (

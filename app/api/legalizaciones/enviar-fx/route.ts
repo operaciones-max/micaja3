@@ -108,16 +108,17 @@ export async function POST(req: NextRequest) {
 
     const asunto = `Reporte Caja Menor ${zonaLabel} — ${coordinador} — ${periodoDe} al ${periodoHasta}`;
     const baseUrl = appPublicBaseUrl();
+    const logoUrl = `${baseUrl}/logo.png`;
 
     const cuerpo = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: #001035; padding: 20px; border-radius: 8px 8px 0 0;">
-        <h2 style="color: #08DDBC; margin: 0;">⚡ BIA Energy SAS ESP</h2>
+      <div style="background: #0a0a0a; padding: 20px; border-radius: 8px 8px 0 0;">
+        <table role="presentation" style="border-collapse: collapse;"><tr><td style="padding-right: 10px;"><img src="${logoUrl}" width="32" height="32" alt="Bia" style="display: block; border-radius: 7px;" /></td><td><h2 style="color: #ffffff; margin: 0;">BIA Energy SAS ESP</h2></td></tr></table>
         <p style="color: #fff; margin: 4px 0 0;">MiCaja — Reporte de Caja Menor</p>
       </div>
 
       <div style="background: #f8f9fa; padding: 24px; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0;">
-        <h3 style="color: #001035;">Envío Reporte Caja Menor de ${escAttr(coordinador)} (${escAttr(zonaLabel)})</h3>
+        <h3 style="color: #0a0a0a;">Envío Reporte Caja Menor de ${escAttr(coordinador)} (${escAttr(zonaLabel)})</h3>
 
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
           <tr>
@@ -138,15 +139,15 @@ export async function POST(req: NextRequest) {
           </tr>
           <tr>
             <td style="padding: 8px; color: #666;">Total a reembolsar:</td>
-            <td style="padding: 8px; font-weight: bold; font-size: 18px; color: #001035;">${escAttr(totalFormato)} COP</td>
+            <td style="padding: 8px; font-weight: bold; font-size: 18px; color: #0a0a0a;">${escAttr(totalFormato)} COP</td>
           </tr>
         </table>
 
         ${
           resumenIA
             ? `
-        <div style="background: #EDE9FC; border-left: 4px solid #534AB7; padding: 12px; border-radius: 4px; margin: 16px 0;">
-          <p style="color: #3C3489; font-size: 13px; margin: 0;"><strong>✨ Análisis IA:</strong> ${escAttr(resumenIA)}</p>
+        <div style="background: #f2f2f7; border-left: 4px solid #0a0a0a; padding: 12px; border-radius: 4px; margin: 16px 0;">
+          <p style="color: #3a3a3c; font-size: 13px; margin: 0;"><strong>✨ Análisis IA:</strong> ${escAttr(resumenIA)}</p>
         </div>
         `
             : ""
@@ -156,9 +157,9 @@ export async function POST(req: NextRequest) {
           El reporte firmado por el coordinador y el administrador se adjunta en PDF.
         </p>
 
-        <div style="background: #001035; padding: 12px; border-radius: 6px; margin-top: 16px; text-align: center;">
+        <div style="background: #0a0a0a; padding: 12px; border-radius: 6px; margin-top: 16px; text-align: center;">
           <a href="${escAttr(`${baseUrl}/admin/reportes`)}"
-             style="color: #08DDBC; text-decoration: none; font-size: 14px;">
+             style="color: #ffffff; text-decoration: none; font-size: 14px;">
             Ver en MiCaja →
           </a>
         </div>

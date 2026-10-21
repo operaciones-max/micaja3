@@ -1,6 +1,8 @@
-import { Document, Image, Page, Polygon, StyleSheet, Svg, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { LOGO_PDF_DATA_URI } from "@/lib/logo-pdf";
 
 const styles = StyleSheet.create({
+  logoImg: { width: 22, height: 22 },
   page: { padding: 28, fontFamily: "Helvetica", backgroundColor: "#fff" },
   header: {
     flexDirection: "row",
@@ -13,14 +15,14 @@ const styles = StyleSheet.create({
   },
   brand: { flexDirection: "row", alignItems: "center", gap: 6 },
   brandText: { flexDirection: "column" },
-  title: { fontSize: 13, fontFamily: "Helvetica-Bold", color: "#0f1729" },
+  title: { fontSize: 13, fontFamily: "Helvetica-Bold", color: "#0a0a0a" },
   small: { fontSize: 8, color: "#6b7280" },
   infoGrid: { flexDirection: "row", flexWrap: "wrap", marginBottom: 14 },
   infoItem: { width: "48%", marginRight: "2%", marginBottom: 6, padding: 6, backgroundColor: "#f9fafb" },
   infoLabel: { fontSize: 7, color: "#9ca3af", marginBottom: 2 },
   infoValue: { fontSize: 9, color: "#111827" },
   row: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: "#e5e7eb", paddingVertical: 4 },
-  headerRow: { backgroundColor: "#0f1729", paddingVertical: 5, paddingHorizontal: 2 },
+  headerRow: { backgroundColor: "#0a0a0a", paddingVertical: 5, paddingHorizontal: 2 },
   th: { fontSize: 7, color: "#fff", fontFamily: "Helvetica-Bold" },
   td: { fontSize: 8, color: "#111827" },
   f: { width: "15%" },
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
   firmaCaption: { fontSize: 7, color: "#6b7280", fontFamily: "Helvetica-Bold", marginBottom: 2 },
   line: { borderTopWidth: 0.5, borderTopColor: "#374151", marginTop: 4, marginBottom: 3 },
   adjPage: { padding: 28, backgroundColor: "#fff" },
-  adjTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#0f1729", marginBottom: 10 },
+  adjTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#0a0a0a", marginBottom: 10 },
   adjImg: { width: "100%", objectFit: "contain" },
 });
 
@@ -87,9 +89,8 @@ export function GastosGruposPdf({
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.brand}>
-            <Svg width={14} height={18} viewBox="0 0 14 18">
-              <Polygon points="8,0 0,10 5,10 3,18 14,7 8,7 10,0" fill="#08DDBC" />
-            </Svg>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- logo en PDF */}
+            <Image style={styles.logoImg} src={LOGO_PDF_DATA_URI} />
             <View style={styles.brandText}>
               <Text style={styles.title}>BIA ENERGY SAS ESP</Text>
               <Text style={styles.small}>REPORTE DE GASTOS GENERALES</Text>

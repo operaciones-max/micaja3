@@ -4,9 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { etiquetaZona } from "@/lib/coordinador-zona";
+import { etiquetaZona, LIMITE_CAJA_MENOR } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString, parseMonto, parseSheetDate } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { ClipboardList, Landmark, PenLine, Receipt, Clock, Wallet } from "lucide-react";
+import { CountUp } from "@/components/shared/count-up";
+import { MetricLabel } from "@/components/shared/metric-label";
+import { SkeletonCard } from "@/components/shared/skeleton-card";
+import { StackedBar } from "@/components/shared/stacked-bar";
 
 type FacturaRow = Record<string, unknown>;
 type EntregaRow = Record<string, unknown>;
@@ -28,15 +33,6 @@ function respKey(r: Record<string, unknown>): string {
   return String(getCellCaseInsensitive(r, "Responsable") || "").trim().toLowerCase();
 }
 
-function BarraProgreso({ pctFacturado, pctPendiente }: { pctFacturado: number; pctPendiente: number }) {
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-[#0a1628] flex">
-      <div style={{ width: `${pctFacturado}%` }} className="h-full bg-[#08DDBC] transition-all" />
-      <div style={{ width: `${pctPendiente}%` }} className="h-full bg-yellow-400 transition-all" />
-    </div>
-  );
-}
-
 function montoFacturaAprobada(f: FacturaRow): number {
   const est = facturaEstado(f).toLowerCase();
   if (est !== "aprobada" && est !== "completada") return 0;
@@ -56,33 +52,36 @@ function calcularPendiente(entregas: EntregaRow[], facturas: FacturaRow[]): numb
   return total;
 }
 
-function ZonaCard({ titulo, limite, tecnicos, entregado, facturado, pendiente, enCaja, pctEntregado, pctFacturado, pctPendiente }: {
-  titulo: string; limite: number; tecnicos: number;
+function CajaCard({ titulo, subtitulo, limite, tecnicos, entregado, facturado, pendiente, enCaja, pctEntregado, pctFacturado, pctPendiente }: {
+  titulo: string; subtitulo: string; limite: number; tecnicos: number;
   entregado: number; facturado: number; pendiente: number; enCaja: number;
   pctEntregado: number; pctFacturado: number; pctPendiente: number;
 }) {
   return (
-    <div className="rounded-xl bg-[#001035] p-5 border border-white/5">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="glass p-5">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-white">{titulo}</h3>
-          <p className="text-xs text-[#8892A4]">Límite {formatCOP(limite)} · {tecnicos} técnicos</p>
+          <h3 className="text-base font-bold text-foreground">{titulo}</h3>
+          <p className="text-xs text-muted-foreground">{subtitulo} · Límite {formatCOP(limite)} · {tecnicos} técnicos</p>
         </div>
-        <span className="text-lg font-bold text-[#08DDBC]">{pctEntregado}%</span>
+        <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+          <CountUp value={pctEntregado} format={(n) => `${n}%`} />
+        </span>
       </div>
-      <BarraProgreso pctFacturado={pctFacturado} pctPendiente={pctPendiente} />
-      <div className="mt-1 flex gap-3 text-xs text-[#525A72]">
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#08DDBC] inline-block" />Facturado</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-400 inline-block" />Pendiente</span>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <div><p className="text-xs text-[#8892A4]">💸 Entregado</p><p className="font-bold text-white text-sm">{formatCOP(entregado)}</p></div>
-        <div><p className="text-xs text-[#8892A4]">🧾 Facturado</p><p className="font-bold text-[#08DDBC] text-sm">{formatCOP(facturado)}</p></div>
-        <div><p className="text-xs text-[#8892A4]">⚠️ Pendiente legalizar</p><p className="font-bold text-yellow-400 text-sm">{formatCOP(pendiente)}</p></div>
+      <StackedBar
+        segments={[
+          { key: "f", label: "Facturado", pct: pctFacturado, value: formatCOP(facturado), className: "bg-brand", dotClassName: "bg-brand" },
+          { key: "p", label: "Pendiente", pct: pctPendiente, value: formatCOP(pendiente), className: "bg-gradient-to-b from-yellow-200 to-yellow-400", dotClassName: "bg-yellow-400" },
+        ]}
+      />
+      <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-4">
+        <div><MetricLabel icon={Wallet}>Entregado</MetricLabel><p className="text-sm font-semibold text-foreground tabular-nums"><CountUp value={entregado} /></p></div>
+        <div><MetricLabel icon={Receipt}>Facturado</MetricLabel><p className="text-sm font-semibold text-foreground tabular-nums"><CountUp value={facturado} /></p></div>
+        <div><MetricLabel icon={Clock}>Pendiente legalizar</MetricLabel><p className="text-sm font-semibold text-warning tabular-nums"><CountUp value={pendiente} /></p></div>
         <div>
-          <p className="text-xs text-[#8892A4]">🏦 En caja</p>
-          <p className={`font-bold text-sm ${enCaja >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-            {enCaja < 0 ? "-" : ""}{formatCOP(Math.abs(enCaja))}
+          <MetricLabel icon={Landmark}>En caja</MetricLabel>
+          <p className={`text-sm font-semibold tabular-nums ${enCaja >= 0 ? "text-success" : "text-danger"}`}>
+            {enCaja < 0 ? "-" : ""}<CountUp value={Math.abs(enCaja)} />
           </p>
         </div>
       </div>
@@ -93,15 +92,13 @@ function ZonaCard({ titulo, limite, tecnicos, entregado, facturado, pendiente, e
 export function AdminDashboardClient() {
   const [loading, setLoading] = useState(true);
 
-  // ✅ CAMBIO: facturas separadas por zona (igual que entregas)
-  const [facturasBogota, setFacturasBogota] = useState<FacturaRow[]>([]);
-  const [facturasCosta, setFacturasCosta] = useState<FacturaRow[]>([]);
+  // Bogotá y Costa Caribe comparten una sola caja menor: se suman en una tarjeta.
+  const [facturasCaja, setFacturasCaja] = useState<FacturaRow[]>([]);
   const [todasFacturas, setTodasFacturas] = useState<FacturaRow[]>([]); // solo para la tabla de últimas facturas
 
   const [reportes, setReportes] = useState<ReporteRow[]>([]);
-  const [entregasBogota, setEntregasBogota] = useState<EntregaRow[]>([]);
-  const [entregasCosta, setEntregasCosta] = useState<EntregaRow[]>([]);
-  const [tecnicosPorSector, setTecnicosPorSector] = useState<{ sector: string }[]>([]);
+  const [entregasCaja, setEntregasCaja] = useState<EntregaRow[]>([]);
+  const [totalTecnicos, setTotalTecnicos] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -130,15 +127,16 @@ export function AdminDashboardClient() {
         eCostaRes.json().catch(() => ({ data: [] })),
       ]);
 
-      setFacturasBogota(Array.isArray(fBogJson.data) ? fBogJson.data : []);
-      setFacturasCosta(Array.isArray(fCostaJson.data) ? fCostaJson.data : []);
-      setTodasFacturas(Array.isArray(fTodasJson.data) ? fTodasJson.data : []);
+      const lista = (j: { data?: unknown }): Record<string, unknown>[] =>
+        Array.isArray(j.data) ? (j.data as Record<string, unknown>[]) : [];
+
+      setFacturasCaja([...lista(fBogJson), ...lista(fCostaJson)]);
+      setTodasFacturas(lista(fTodasJson));
       setReportes(Array.isArray(rJson.data) ? rJson.data : []);
-      setEntregasBogota(Array.isArray(eBogJson.data) ? eBogJson.data : []);
-      setEntregasCosta(Array.isArray(eCostaJson.data) ? eCostaJson.data : []);
+      setEntregasCaja([...lista(eBogJson), ...lista(eCostaJson)]);
     } catch {
-      setFacturasBogota([]); setFacturasCosta([]); setTodasFacturas([]);
-      setReportes([]); setEntregasBogota([]); setEntregasCosta([]);
+      setFacturasCaja([]); setTodasFacturas([]);
+      setReportes([]); setEntregasCaja([]);
     } finally {
       setLoading(false);
     }
@@ -152,44 +150,24 @@ export function AdminDashboardClient() {
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
-        const rows = Array.isArray(d.data) ? d.data : [];
-        setTecnicosPorSector(rows.map((row: Record<string, unknown>) => ({
-          sector: String(getCellCaseInsensitive(row, "Sector", "Zona") || "Bogota").trim(),
-        })));
+        setTotalTecnicos(Array.isArray(d.data) ? d.data.length : 0);
       })
-      .catch(() => { if (!cancelled) setTecnicosPorSector([]); });
+      .catch(() => { if (!cancelled) setTotalTecnicos(0); });
     return () => { cancelled = true; };
   }, []);
 
-  const limiteBogota = 1_000_000;
-  const limiteCosta = 3_000_000;
-
-  // ── BOGOTÁ ── ✅ usa facturasBogota directo, sin filtrar en cliente
-  const bogota = useMemo(() => {
-    const entregado = entregasBogota.reduce((s, e) => s + montoEntregaRow(e), 0);
-    const facturado = facturasBogota.reduce((s, f) => s + montoFacturaAprobada(f), 0);
-    const pendiente = calcularPendiente(entregasBogota, facturasBogota);
+  // ── CAJA MENOR ── Bogotá + Costa Caribe en una sola tarjeta, un solo límite
+  const caja = useMemo(() => {
+    const entregado = entregasCaja.reduce((s, e) => s + montoEntregaRow(e), 0);
+    const facturado = facturasCaja.reduce((s, f) => s + montoFacturaAprobada(f), 0);
+    const pendiente = calcularPendiente(entregasCaja, facturasCaja);
     const enCaja = facturado - entregado;
-    const pctEntregado = limiteBogota > 0 ? Math.min(100, Math.round((entregado / limiteBogota) * 100)) : 0;
-    const pctFacturado = limiteBogota > 0 ? Math.min(100, Math.round((facturado / limiteBogota) * 100)) : 0;
-    const pctPendiente = limiteBogota > 0 ? Math.min(100, Math.round((pendiente / limiteBogota) * 100)) : 0;
-    return { entregado, facturado, pendiente, enCaja, pctEntregado, pctFacturado, pctPendiente };
-  }, [facturasBogota, entregasBogota]);
-
-  // ── COSTA CARIBE ── ✅ usa facturasCosta directo, sin filtrar en cliente
-  const costa = useMemo(() => {
-    const entregado = entregasCosta.reduce((s, e) => s + montoEntregaRow(e), 0);
-    const facturado = facturasCosta.reduce((s, f) => s + montoFacturaAprobada(f), 0);
-    const pendiente = calcularPendiente(entregasCosta, facturasCosta);
-    const enCaja = facturado - entregado;
-    const pctEntregado = limiteCosta > 0 ? Math.min(100, Math.round((entregado / limiteCosta) * 100)) : 0;
-    const pctFacturado = limiteCosta > 0 ? Math.min(100, Math.round((facturado / limiteCosta) * 100)) : 0;
-    const pctPendiente = limiteCosta > 0 ? Math.min(100, Math.round((pendiente / limiteCosta) * 100)) : 0;
-    return { entregado, facturado, pendiente, enCaja, pctEntregado, pctFacturado, pctPendiente };
-  }, [facturasCosta, entregasCosta]);
-
-  const usuariosBogota = useMemo(() => tecnicosPorSector.filter((u) => u.sector === "Bogota").length, [tecnicosPorSector]);
-  const usuariosCosta = useMemo(() => tecnicosPorSector.filter((u) => u.sector === "Costa Caribe").length, [tecnicosPorSector]);
+    const pct = (monto: number) => Math.min(100, Math.round((monto / LIMITE_CAJA_MENOR) * 100));
+    return {
+      entregado, facturado, pendiente, enCaja,
+      pctEntregado: pct(entregado), pctFacturado: pct(facturado), pctPendiente: pct(pendiente),
+    };
+  }, [facturasCaja, entregasCaja]);
 
   // ✅ facturasPendientes usa todasFacturas para no perder ninguna
   const facturasPendientes = useMemo(() => todasFacturas.filter((f) => facturaEstado(f).toLowerCase() === "pendiente").length, [todasFacturas]);
@@ -208,61 +186,60 @@ export function AdminDashboardClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Panel administrador</h1>
-        <p className="text-sm text-[#8892A4]">Resumen MiCaja · todas las zonas</p>
+        <h1 className="text-2xl font-bold text-foreground">Panel administrador</h1>
+        <p className="text-sm text-muted-foreground">Resumen MiCaja · Bogotá y Costa Caribe</p>
       </div>
 
-      {/* ── POR ZONA ── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* ── CAJA MENOR ── */}
+      <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          [0, 1].map((i) => <div key={i} className="h-48 animate-pulse rounded-xl bg-[#001035]" />)
+          <SkeletonCard className="h-48" lines={4} />
         ) : (
-          <>
-            <ZonaCard titulo="Zona Bogotá" limite={limiteBogota} tecnicos={usuariosBogota}
-              entregado={bogota.entregado} facturado={bogota.facturado} pendiente={bogota.pendiente} enCaja={bogota.enCaja}
-              pctEntregado={bogota.pctEntregado} pctFacturado={bogota.pctFacturado} pctPendiente={bogota.pctPendiente} />
-            <ZonaCard titulo="Zona Costa Caribe" limite={limiteCosta} tecnicos={usuariosCosta}
-              entregado={costa.entregado} facturado={costa.facturado} pendiente={costa.pendiente} enCaja={costa.enCaja}
-              pctEntregado={costa.pctEntregado} pctFacturado={costa.pctFacturado} pctPendiente={costa.pctPendiente} />
-          </>
+          <CajaCard titulo="Caja menor" subtitulo="Bogotá + Costa Caribe" limite={LIMITE_CAJA_MENOR} tecnicos={totalTecnicos}
+            entregado={caja.entregado} facturado={caja.facturado} pendiente={caja.pendiente} enCaja={caja.enCaja}
+            pctEntregado={caja.pctEntregado} pctFacturado={caja.pctFacturado} pctPendiente={caja.pctPendiente} />
         )}
       </div>
 
       {/* ── CONTADORES ── */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-[#001035] p-4 border border-white/5">
-          <p className="mb-1 text-xs text-[#8892A4]">📋 Facturas pendientes</p>
-          <p className="text-2xl font-bold text-yellow-400">{loading ? "—" : facturasPendientes}</p>
-          <p className="text-xs text-[#525A72]">por revisar</p>
+        <div className="glass lift p-4">
+          <MetricLabel icon={ClipboardList}>Facturas pendientes</MetricLabel>
+          <p className="text-2xl font-semibold tracking-tight text-warning tabular-nums">
+            {loading ? "—" : <CountUp value={facturasPendientes} format={String} />}
+          </p>
+          <p className="text-xs text-muted-foreground">por revisar</p>
         </div>
-        <div className="rounded-xl bg-[#001035] p-4 border border-white/5">
-          <p className="mb-1 text-xs text-[#8892A4]">✍️ Reportes por firmar</p>
-          <p className="text-2xl font-bold text-orange-400">{loading ? "—" : reportesPendientesFirma}</p>
-          <p className="text-xs text-[#525A72]">pendientes</p>
+        <div className="glass lift p-4">
+          <MetricLabel icon={PenLine}>Reportes por firmar</MetricLabel>
+          <p className="text-2xl font-semibold tracking-tight text-orange tabular-nums">
+            {loading ? "—" : <CountUp value={reportesPendientesFirma} format={String} />}
+          </p>
+          <p className="text-xs text-muted-foreground">pendientes</p>
         </div>
       </div>
 
       {/* ── ÚLTIMAS FACTURAS ── */}
-      <Card className="border-white/5 bg-[#001035] text-white">
+      <Card className="glass text-foreground">
         <CardHeader><CardTitle className="text-base">Últimas 10 facturas</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10">
-                <TableHead className="text-[#8892A4]">Fecha</TableHead>
-                <TableHead className="text-[#8892A4]">Responsable</TableHead>
-                <TableHead className="text-[#8892A4]">Proveedor</TableHead>
-                <TableHead className="text-[#8892A4]">Valor</TableHead>
-                <TableHead className="text-[#8892A4]">Zona</TableHead>
-                <TableHead className="text-[#8892A4]">Estado</TableHead>
+              <TableRow className="border-border">
+                <TableHead className="text-muted-foreground">Fecha</TableHead>
+                <TableHead className="text-muted-foreground">Responsable</TableHead>
+                <TableHead className="text-muted-foreground">Proveedor</TableHead>
+                <TableHead className="text-muted-foreground">Valor</TableHead>
+                <TableHead className="text-muted-foreground">Zona</TableHead>
+                <TableHead className="text-muted-foreground">Estado</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6}><div className="h-6 animate-pulse rounded bg-white/5" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={6}><div className="h-6 animate-pulse rounded bg-foreground/5" /></TableCell></TableRow>
               ) : ultimasFacturas.length ? (
                 ultimasFacturas.map((f, i) => (
-                  <TableRow key={i} className="border-white/5 hover:bg-white/5">
+                  <TableRow key={i} className="border-border hover:bg-foreground/5">
                     <TableCell className="whitespace-nowrap text-sm">{facturaFecha(f) || "—"}</TableCell>
                     <TableCell className="text-sm">{String(getCellCaseInsensitive(f, "Responsable") || "—")}</TableCell>
                     <TableCell className="text-sm">{String(getCellCaseInsensitive(f, "Proveedor", "Razon_Social") || "—")}</TableCell>
@@ -272,7 +249,7 @@ export function AdminDashboardClient() {
                   </TableRow>
                 ))
               ) : (
-                <TableRow><TableCell colSpan={6} className="text-[#8892A4]">Sin facturas</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-muted-foreground">Sin facturas</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -280,43 +257,43 @@ export function AdminDashboardClient() {
       </Card>
 
       {/* ── REPORTES PENDIENTES ── */}
-      <Card className="border-white/5 bg-[#001035] text-white">
+      <Card className="glass text-foreground">
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base">Reportes pendientes de firma</CardTitle>
-          <Link href="/admin/reportes" className="inline-flex h-8 items-center rounded-lg border border-white/20 px-3 text-xs hover:bg-white/5">
+          <Link href="/admin/reportes" className="inline-flex h-8 items-center rounded-lg border border-border px-3 text-xs hover:bg-foreground/5">
             Ir a reportes
           </Link>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10">
-                <TableHead className="text-[#8892A4]">Fecha</TableHead>
-                <TableHead className="text-[#8892A4]">Coordinador</TableHead>
-                <TableHead className="text-[#8892A4]">Zona</TableHead>
-                <TableHead className="text-[#8892A4]">Total</TableHead>
-                <TableHead className="text-right text-[#8892A4]">Acciones</TableHead>
+              <TableRow className="border-border">
+                <TableHead className="text-muted-foreground">Fecha</TableHead>
+                <TableHead className="text-muted-foreground">Coordinador</TableHead>
+                <TableHead className="text-muted-foreground">Zona</TableHead>
+                <TableHead className="text-muted-foreground">Total</TableHead>
+                <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={5}><div className="h-6 animate-pulse rounded bg-white/5" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={5}><div className="h-6 animate-pulse rounded bg-foreground/5" /></TableCell></TableRow>
               ) : reportesPendientes.length ? (
                 reportesPendientes.map((r, i) => (
-                  <TableRow key={`${reporteId(r)}-${i}`} className="border-white/5 hover:bg-white/5">
+                  <TableRow key={`${reporteId(r)}-${i}`} className="border-border hover:bg-foreground/5">
                     <TableCell className="text-sm">{r.Fecha || "—"}</TableCell>
                     <TableCell className="text-sm">{r.Coordinador || "—"}</TableCell>
                     <TableCell className="text-sm">{etiquetaZona(String(r.Sector || ""))}</TableCell>
                     <TableCell className="tabular-nums text-sm">{formatCOP(parseCOPString(String(r.Total || r.TotalAprobado || "0")))}</TableCell>
                     <TableCell className="text-right">
-                      <Link href="/admin/reportes" className="inline-flex h-7 items-center rounded-lg bg-white/5 px-3 text-xs hover:bg-white/10">
+                      <Link href="/admin/reportes" className="inline-flex h-7 items-center rounded-lg bg-foreground/5 px-3 text-xs hover:bg-foreground/10">
                         ✍️ Firmar
                       </Link>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
-                <TableRow><TableCell colSpan={5} className="text-[#8892A4]">No hay reportes pendientes</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-muted-foreground">No hay reportes pendientes</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

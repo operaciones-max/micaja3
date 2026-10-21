@@ -1,5 +1,5 @@
 import { loadMicajaBalancesByResponsable } from "@/lib/balance-micaja";
-import { etiquetaZona, limiteAprobacionZona } from "@/lib/coordinador-zona";
+import { ZONA_TODAS, esCoordinadorMultizona, etiquetaZona, limiteAprobacionZona } from "@/lib/coordinador-zona";
 import { formatCOP } from "@/lib/format";
 import { enviarTelegram, escHtml } from "@/lib/notificaciones";
 import { getUsuariosFromSheet, type UsuarioSheet } from "@/lib/usuarios-sheet";
@@ -119,21 +119,27 @@ export async function handleComandoEquipo(chatId: string): Promise<void> {
     return;
   }
 
-  const zona = coordinador.sector;
+  // Coordinador multizona: su equipo son los técnicos de Bogotá y Costa Caribe.
+  const multizona = coordinador.rol === "coordinador" && esCoordinadorMultizona(coordinador.email);
+  const zona = multizona ? ZONA_TODAS : coordinador.sector;
   const tecnicos = usuarios
     .filter(
       (u) =>
         u.userActive &&
         u.rol === "user" &&
-        u.sector === zona
+        (multizona || u.sector === zona)
     )
     .sort((a, b) => a.responsable.localeCompare(b.responsable, "es"));
 
-  const balanceMap = await loadMicajaBalancesByResponsable({ sectorRaw: zona });
+  const balanceMap = await loadMicajaBalancesByResponsable(multizona ? undefined : { sectorRaw: zona });
 
   const limite = limiteAprobacionZona(zona);
   const base = etiquetaZona(zona);
-  const zonaLabel = zona === "Costa Caribe" ? `${escHtml(base)} 🌊` : `${escHtml(base)} 🏙️`;
+  const zonaLabel = multizona
+    ? `${escHtml(base)} 🏙️🌊`
+    : zona === "Costa Caribe"
+      ? `${escHtml(base)} 🌊`
+      : `${escHtml(base)} 🏙️`;
 
   let totalEntregadoZona = 0;
   let totalFacturadoZona = 0;

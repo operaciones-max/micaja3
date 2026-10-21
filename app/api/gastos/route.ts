@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { getSupabase } from "@/lib/supabase";
 import { normalizeSector, sectorsEquivalent } from "@/lib/sector-normalize";
+import { ZONA_TODAS, zonaDeOperacion } from "@/lib/coordinador-zona";
 import { TABLES } from "@/lib/db-tables";
 
 type GastoGeneralDb = {
@@ -68,7 +69,7 @@ export async function GET() {
 
     let rows = ((data ?? []) as GastoGeneralDb[]).map(dbToApi);
 
-    if (rol === "coordinador") {
+    if (rol === "coordinador" && zonaDeOperacion(session.user) !== ZONA_TODAS) {
       const sector = String(session.user.sector || "");
       const { getUsuariosFromSheet } = await import("@/lib/usuarios-sheet");
       const usuarios = await getUsuariosFromSheet();

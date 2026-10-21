@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { createSignedUploadUrlForPath, publicUrlForPath } from "@/lib/storage-supabase";
+import { ZONA_TODAS, zonaDeOperacion } from "@/lib/coordinador-zona";
 
 const ALLOWED = new Map([
   ["image/jpeg", "jpg"],
@@ -81,7 +82,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isReportes && !isGastos) {
-      if ((rol === "user" || rol === "coordinador") && sessionSector && sector !== sessionSector)
+      const multizona = rol === "coordinador" && zonaDeOperacion(session.user) === ZONA_TODAS;
+      if ((rol === "user" || rol === "coordinador") && !multizona && sessionSector && sector !== sessionSector)
         return NextResponse.json(
           { error: "El sector no coincide con su cuenta" },
           { status: 403 }

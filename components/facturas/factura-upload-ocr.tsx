@@ -159,7 +159,7 @@ export function FacturaUploadOcr({
             <img src={preview} alt="Vista previa factura" className="max-h-64 mx-auto rounded-md" />
             {ocrStatus === "reading" && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
-                <div className="text-white text-center px-4">
+                <div className="text-foreground text-center px-4">
                   <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
                   <p className="text-sm">Extrayendo texto (OCR)…</p>
                 </div>
@@ -205,7 +205,7 @@ export function FacturaUploadOcr({
           )}
           {ocrStatus === "done" && (
             <>
-              <Check className="h-4 w-4 text-green-600 shrink-0" /> Datos extraídos; revisa y corrige si hace falta
+              <Check className="h-4 w-4 text-success shrink-0" /> Datos extraídos; revisa y corrige si hace falta
             </>
           )}
           {ocrStatus === "error" && (

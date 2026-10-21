@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { getSupabase } from "@/lib/supabase";
 import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
+import { zonaDeOperacion } from "@/lib/coordinador-zona";
 import { TABLES } from "@/lib/db-tables";
 import { updateFacturasEstadoMasivo } from "@/lib/facturas-supabase";
 import { appPublicBaseUrl, escHtml, notificarUsuario } from "@/lib/notificaciones";
@@ -63,8 +64,7 @@ export async function POST(req: NextRequest) {
   // Coordinador: solo las de su zona
   let permitidas = elegibles;
   if (rol === "coordinador") {
-    const sector = String(session.user.sector || "");
-    const set = await responsablesEnZonaSheetSet(sector);
+    const set = await responsablesEnZonaSheetSet(zonaDeOperacion(session.user));
     permitidas = elegibles.filter((r) =>
       set.has(String(r.assignee || "").toLowerCase())
     );

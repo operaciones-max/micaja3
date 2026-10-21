@@ -131,24 +131,24 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
         if (!next) onClose();
       }}
     >
-      <DialogContent className="max-h-[95dvh] w-[96vw] max-w-5xl overflow-y-auto border border-white/10 bg-[#0f1729] text-white p-4 sm:p-6 text-[15px]">
+      <DialogContent className="max-h-[95dvh] w-[96vw] max-w-5xl overflow-y-auto border border-border bg-popover text-foreground p-4 sm:p-6 text-[15px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             <FileText className="h-5 w-5 shrink-0 text-cyan-400" />
             Form Finance — Legalización
           </DialogTitle>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Reporte {reporteId || "—"} · {reporte.Periodo_Desde || "—"} → {reporte.Periodo_Hasta || "—"}
           </p>
         </DialogHeader>
 
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <div className="rounded-lg border border-border bg-foreground/5 p-4">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             PDF del reporte (ya firmado)
           </p>
           {pdfUrl ? (
             <>
-              <div className="mb-3 h-[min(38vh,340px)] min-h-[160px] w-full overflow-hidden rounded-md border border-white/10 bg-black/30">
+              <div className="mb-3 h-[min(38vh,340px)] min-h-[160px] w-full overflow-hidden rounded-md border border-border bg-black/30">
                 <iframe
                   title="Vista previa PDF"
                   src={previewSrc}
@@ -156,7 +156,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
                 />
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex-1 truncate rounded bg-white/5 p-2 text-xs text-gray-300">{pdfUrl}</div>
+                <div className="flex-1 truncate rounded bg-foreground/5 p-2 text-xs text-muted-foreground">{pdfUrl}</div>
                 <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" variant="outline" className="gap-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10">
                     <Download className="h-4 w-4" />
@@ -166,96 +166,96 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
               </div>
             </>
           ) : (
-            <p className="text-sm text-red-400">⚠️ No se encontró PDF para este reporte.</p>
+            <p className="text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
           )}
-          <p className="mt-2 text-xs text-amber-400">
+          <p className="mt-2 text-xs text-warning">
             ⚠️ Descarga el PDF antes de abrir el formulario; se adjunta manualmente en Google Forms.
           </p>
         </div>
 
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-400">
+        <div className="rounded-lg border border-border bg-foreground/5 p-4">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Datos del formulario FX (editables)
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
             <div className="col-span-2">
-              <Label className="text-xs text-gray-400">Empresa</Label>
+              <Label className="text-xs text-muted-foreground">Empresa</Label>
               <Input
                 value={campos.empresa}
                 onChange={(e) => setCampos((p) => ({ ...p, empresa: e.target.value }))}
-                className="mt-1 border-white/10 bg-white/5 text-white"
+                className="mt-1 border-border bg-foreground/5 text-foreground"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">Nombres y apellidos</Label>
+              <Label className="text-xs text-muted-foreground">Nombres y apellidos</Label>
               <Input
                 value={campos.nombres}
                 onChange={(e) => setCampos((p) => ({ ...p, nombres: e.target.value }))}
-                className="mt-1 border-white/10 bg-white/5 text-white"
+                className="mt-1 border-border bg-foreground/5 text-foreground"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">No. identificación (cédula)</Label>
+              <Label className="text-xs text-muted-foreground">No. identificación (cédula)</Label>
               <Input
                 value={campos.identificacion}
                 onChange={(e) => setCampos((p) => ({ ...p, identificacion: e.target.value }))}
-                className="mt-1 border-white/10 bg-white/5 text-white"
+                className="mt-1 border-border bg-foreground/5 text-foreground"
                 placeholder="Sin cédula en perfil — ingresar"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">Cargo</Label>
+              <Label className="text-xs text-muted-foreground">Cargo</Label>
               <Input
                 value={campos.cargo}
                 onChange={(e) => setCampos((p) => ({ ...p, cargo: e.target.value }))}
-                className="mt-1 border-white/10 bg-white/5 text-white"
+                className="mt-1 border-border bg-foreground/5 text-foreground"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">Correo corporativo</Label>
+              <Label className="text-xs text-muted-foreground">Correo corporativo</Label>
               <Input
                 value={campos.correo}
                 onChange={(e) => setCampos((p) => ({ ...p, correo: e.target.value }))}
-                className="mt-1 border-white/10 bg-white/5 text-white"
+                className="mt-1 border-border bg-foreground/5 text-foreground"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">Tipo de solicitud</Label>
+              <Label className="text-xs text-muted-foreground">Tipo de solicitud</Label>
               <Input
                 value={campos.tipoSolicitud}
                 readOnly
-                className="mt-1 cursor-not-allowed border-white/10 bg-white/5 text-white/60"
+                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
               />
             </div>
 
             <div>
-              <Label className="text-xs text-gray-400">Breve descripción</Label>
+              <Label className="text-xs text-muted-foreground">Breve descripción</Label>
               <Input
                 value={campos.descripcion}
                 readOnly
-                className="mt-1 cursor-not-allowed border-white/10 bg-white/5 text-white/60"
+                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
               />
             </div>
 
             <div className="col-span-2">
-              <Label className="text-xs text-gray-400">Departamento origen del costo/gasto</Label>
+              <Label className="text-xs text-muted-foreground">Departamento origen del costo/gasto</Label>
               <Input
                 value={campos.departamento}
                 readOnly
-                className="mt-1 cursor-not-allowed border-white/10 bg-white/5 text-white/60"
+                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
               />
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-amber-300">
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-warning">
           <p className="mb-1 font-semibold">Pasos para enviar:</p>
-          <ol className="list-inside list-decimal space-y-1 text-xs text-amber-200">
+          <ol className="list-inside list-decimal space-y-1 text-xs text-warning">
             <li>Descarga el PDF firmado</li>
             <li>Haz clic en Abrir Google Form (campos de texto prellenados)</li>
             <li>Adjunta el PDF descargado</li>
@@ -267,7 +267,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
         <DialogFooter className="flex flex-wrap gap-2 pt-2">
           {!enviado ? (
             <>
-              <Button variant="ghost" onClick={onClose} className="text-gray-400">
+              <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
                 Cancelar
               </Button>
               <Button
@@ -288,7 +288,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
               </Button>
             </>
           ) : (
-            <div className="w-full text-center font-semibold text-emerald-400">
+            <div className="w-full text-center font-semibold text-success">
               ✅ ¡Reporte marcado como Enviado!
             </div>
           )}

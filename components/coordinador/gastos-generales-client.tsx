@@ -71,14 +71,14 @@ const cargar = useCallback(async () => {
   }
   return (
     <div className="space-y-6">
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader><CardTitle>Gastos Generales</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="space-y-1"><Label>Desde</Label><Input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="bg-bia-blue border-bia-gray/40" /></div>
             <div className="space-y-1"><Label>Hasta</Label><Input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="bg-bia-blue border-bia-gray/40" /></div>
           </div>
-          {msg && <p className="text-sm text-green-400">{msg}</p>}
+          {msg && <p className="text-sm text-success">{msg}</p>}
           {loading ? <p className="text-bia-gray">Cargando...</p> : sesiones.length === 0 ? <p className="text-bia-gray">Sin gastos registrados</p> : sesiones.map((s, si) => {
             const key = s.nombre + s.motivo + s.fechaInicio;
             const total = s.facturas.reduce((a: number, f: any) => a + Number(String(f.valor).replace(/[^0-9]/g, "")), 0);

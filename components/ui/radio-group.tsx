@@ -33,7 +33,7 @@ function RadioGroupItem({
     <label
       htmlFor={id}
       className={cn(
-        "flex cursor-pointer items-center gap-2 rounded-md border border-bia-gray/40 bg-bia-blue/50 px-3 py-2 text-sm text-white transition-colors hover:bg-bia-blue-mid/80 has-[[data-checked]]:border-bia-aqua has-[[data-checked]]:bg-bia-aqua/10",
+        "flex cursor-pointer items-center gap-2 rounded-md border border-bia-gray/40 bg-bia-blue/50 px-3 py-2 text-sm text-foreground transition-colors hover:bg-bia-blue-mid/80 has-[[data-checked]]:border-bia-aqua has-[[data-checked]]:bg-bia-aqua/10",
         className
       )}
     >
@@ -46,7 +46,7 @@ function RadioGroupItem({
           "focus-visible:ring-2 focus-visible:ring-bia-aqua/50"
         )}
       >
-        <Radio.Indicator className="size-2 rounded-full bg-white [[data-unchecked]_&]:hidden" />
+        <Radio.Indicator className="size-2 rounded-full bg-brand-foreground [[data-unchecked]_&]:hidden" />
       </Radio.Root>
       <span className="flex-1">{label}</span>
     </label>

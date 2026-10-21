@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Portal } from "@/components/shared/portal";
 
 type Props = {
   src: string | null;
@@ -39,28 +40,30 @@ export function FacturaImagenModal({ src, onClose }: Props) {
   if (!mounted || !src) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-[#0A1B4D] shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-[#525A72]/20 px-4 py-3">
-          <span className="text-sm font-medium text-white">Imagen de factura</span>
-          <div className="flex items-center gap-3">
-            <a href={src} target="_blank" rel="noopener noreferrer" className="text-sm text-[#08DDBC] hover:underline">Abrir en Drive</a>
-            <button type="button" onClick={onClose} className="text-lg text-[#525A72] hover:text-white">x</button>
+    <Portal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={onClose}>
+        <div className="relative w-full max-w-2xl overflow-hidden glass-strong" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-medium text-foreground">Imagen de factura</span>
+            <div className="flex items-center gap-3">
+              <a href={src} target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:underline">Abrir en Drive</a>
+              <button type="button" onClick={onClose} className="text-lg text-muted-foreground hover:text-foreground">x</button>
+            </div>
+          </div>
+          <div className="flex min-h-[300px] items-center justify-center bg-white p-2">
+            {iframe ? (
+              <iframe src={iframeSrcForFactura(src)} className="h-[500px] w-full border-0" title="Factura PDF" />
+            ) : (
+              <img src={proxyUrl(src)} alt="Factura" className="max-h-[500px] max-w-full object-contain" />
+            )}
+          </div>
+          <div className="px-4 py-2 border-t border-border flex justify-between">
+            <span className="text-xs text-muted-foreground">ESC para cerrar</span>
+            <a href={src} download className="text-xs text-foreground hover:underline">Descargar</a>
           </div>
         </div>
-        <div className="flex min-h-[300px] items-center justify-center bg-white p-2">
-          {iframe ? (
-            <iframe src={iframeSrcForFactura(src)} className="h-[500px] w-full border-0" title="Factura PDF" />
-          ) : (
-            <img src={proxyUrl(src)} alt="Factura" className="max-h-[500px] max-w-full object-contain" />
-          )}
-        </div>
-        <div className="px-4 py-2 border-t border-[#525A72]/20 flex justify-between">
-          <span className="text-xs text-[#525A72]">ESC para cerrar</span>
-          <a href={src} download className="text-xs text-[#08DDBC] hover:underline">Descargar</a>
-        </div>
       </div>
-    </div>
+    </Portal>
   );
 }
 /* eslint-enable @next/next/no-img-element */

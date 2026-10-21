@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { Header } from "./header";
 import { SidebarNav } from "./sidebar-nav";
 import { MobileBottomNav } from "./mobile-nav";
@@ -12,8 +13,9 @@ export function AppShell({
   session: Session;
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 shrink-0 md:block">
         <SidebarNav session={session} />
       </aside>
@@ -22,8 +24,11 @@ export function AppShell({
         <Header serverSession={session} />
       </div>
 
-      <main className="pt-14 pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-0 md:pl-64">
-        <div className="mx-auto w-full max-w-6xl p-4 md:p-6">{children}</div>
+      <main className="pt-14 pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-0 md:pl-64">
+        {/* key: la animación de entrada se repite al navegar entre secciones */}
+        <div key={pathname} className="page-enter mx-auto w-full max-w-6xl p-4 md:p-6">
+          {children}
+        </div>
       </main>
 
       <MobileBottomNav session={session} />

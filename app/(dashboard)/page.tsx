@@ -2,8 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { CoordinadorDashboardClient } from "@/components/coordinador/coordinador-dashboard-client";
-import { etiquetaZona } from "@/lib/coordinador-zona";
-import { normalizeSector } from "@/lib/sector-normalize";
+import { etiquetaZona, zonaDeOperacion } from "@/lib/coordinador-zona";
 
 export default async function DashboardHomePage() {
   const session = await getServerSession(authOptions);
@@ -12,8 +11,8 @@ export default async function DashboardHomePage() {
   if (rol === "user") redirect("/mi-cuenta");
   if (rol === "admin") redirect("/admin");
   if (rol === "coordinador") {
-    const sectorRaw = String(session.user.sector || "");
-    const sector = normalizeSector(sectorRaw) ?? sectorRaw;
+    // Una zona, o "Todas" para un coordinador multizona.
+    const sector = zonaDeOperacion(session.user);
     return (
       <CoordinadorDashboardClient sector={sector} zonaLabel={etiquetaZona(sector)} />
     );

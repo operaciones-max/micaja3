@@ -161,25 +161,27 @@ export default function NuevaFacturaPage() {
   const [responsableTarget, setResponsableTarget] = useState("");
   const [areaFactura, setAreaFactura] = useState("");
   const [usuariosZona, setUsuariosZona] = useState<
-    { responsable: string; cargo: string; email: string; area: string }[]
+    { responsable: string; cargo: string; email: string; area: string; sector: string }[]
   >([]);
 
   const sessionSector = String(user?.sector || "");
   const rol = String(user?.rol || "user").toLowerCase();
+  // "Todas" si el coordinador opera sobre Bogotá y Costa Caribe.
+  const zonaOperacion = String(user?.zona || sessionSector);
 
   useEffect(() => {
     if (rol !== "coordinador" && rol !== "admin") return;
     const url =
       rol === "admin"
         ? "/api/usuarios?rol=user"
-        : `/api/usuarios?sector=${encodeURIComponent(sessionSector)}&rol=user`;
+        : `/api/usuarios?sector=${encodeURIComponent(zonaOperacion)}&rol=user`;
     let cancelled = false;
     fetch(url)
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
         const rows = Array.isArray(d.data) ? d.data : [];
-        const list: { responsable: string; cargo: string; email: string; area: string }[] = [];
+        const list: { responsable: string; cargo: string; email: string; area: string; sector: string }[] = [];
         for (const row of rows) {
           const rec = row as Record<string, unknown>;
           const responsable = String(getCellCaseInsensitive(rec, "Responsable") || "").trim();
@@ -190,6 +192,7 @@ export default function NuevaFacturaPage() {
             email,
             cargo: String(getCellCaseInsensitive(rec, "Cargo") || "").trim(),
             area: String(getCellCaseInsensitive(rec, "Area", "Área") || "").trim(),
+            sector: String(getCellCaseInsensitive(rec, "Sector") || "").trim(),
           });
         }
         list.sort((a, b) => a.responsable.localeCompare(b.responsable, "es"));
@@ -201,7 +204,7 @@ export default function NuevaFacturaPage() {
     return () => {
       cancelled = true;
     };
-  }, [rol, sessionSector]);
+  }, [rol, zonaOperacion]);
 
   useEffect(() => {
     const s = String(user?.sector || "");
@@ -459,9 +462,9 @@ export default function NuevaFacturaPage() {
                 <span
                   className={
                     done
-                      ? "text-emerald-400"
+                      ? "text-success"
                       : pulse
-                        ? "text-amber-400 animate-pulse"
+                        ? "text-warning animate-pulse"
                         : "text-bia-gray"
                   }
                 >
@@ -470,9 +473,9 @@ export default function NuevaFacturaPage() {
                 <span
                   className={
                     done
-                      ? "text-white"
+                      ? "text-foreground"
                       : pulse
-                        ? "text-white animate-pulse"
+                        ? "text-foreground animate-pulse"
                         : "text-bia-gray"
                   }
                 >
@@ -489,7 +492,7 @@ export default function NuevaFacturaPage() {
         </div>
       </div>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Paso 1 — Seleccionar archivo</CardTitle>
         </CardHeader>
@@ -513,7 +516,7 @@ export default function NuevaFacturaPage() {
             <Button
               type="button"
               variant="secondary"
-              className="bg-bia-blue-mid text-white hover:bg-bia-gray/25"
+              className="bg-bia-blue-mid text-foreground hover:bg-bia-gray/25"
               onClick={() => cameraInputRef.current?.click()}
             >
               📷 Tomar foto
@@ -521,7 +524,7 @@ export default function NuevaFacturaPage() {
             <Button
               type="button"
               variant="secondary"
-              className="bg-bia-blue-mid text-white hover:bg-bia-gray/25"
+              className="bg-bia-blue-mid text-foreground hover:bg-bia-gray/25"
               onClick={() => galleryInputRef.current?.click()}
             >
               📁 Galería / archivo
@@ -531,7 +534,7 @@ export default function NuevaFacturaPage() {
             Imagen (JPG, PNG, WebP, HEIC…) o PDF · máximo 10MB
           </p>
 
-          {uploadError ? <p className="text-sm text-red-400">{uploadError}</p> : null}
+          {uploadError ? <p className="text-sm text-danger">{uploadError}</p> : null}
 
           {file ? (
             <div className="rounded-md border border-bia-gray/40 bg-bia-blue/40 p-3">
@@ -546,7 +549,7 @@ export default function NuevaFacturaPage() {
                 />
               ) : isPdf ? (
                 <div className="flex items-center gap-3 text-bia-gray-light">
-                  <FileText className="h-12 w-12 shrink-0 text-amber-400" />
+                  <FileText className="h-12 w-12 shrink-0 text-warning" />
                   <div>
                     <p className="font-medium">PDF</p>
                     <p className="text-sm text-bia-gray">{file.name}</p>
@@ -581,18 +584,18 @@ export default function NuevaFacturaPage() {
             </p>
           )}
           {uploadState === "ready" ? (
-            <p className="text-sm text-emerald-400">Listo ✅ — revisa los datos abajo</p>
+            <p className="text-sm text-success">Listo ✅ — revisa los datos abajo</p>
           ) : null}
         </CardContent>
       </Card>
 
       {ocrHint ? (
-        <p className="rounded-md border border-amber-800/60 bg-amber-950/30 px-3 py-2 text-sm text-amber-100">
+        <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-warning">
           {ocrHint}
         </p>
       ) : null}
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Paso 2 — Revisar y completar</CardTitle>
         </CardHeader>
@@ -767,11 +770,11 @@ export default function NuevaFacturaPage() {
               </Label>
             </div>
             {aNombreBia ? (
-              <Badge className="w-fit border-emerald-700 bg-emerald-950 text-emerald-200">
+              <Badge className="w-fit border-success/40 bg-success/15 text-success">
                 ✅ A nombre de BIA
               </Badge>
             ) : (
-              <Badge className="w-fit border-amber-700 bg-amber-950 text-amber-200">
+              <Badge className="w-fit border-warning/40 bg-warning/15 text-warning">
                 ⚠️ No es a nombre de BIA
               </Badge>
             )}
@@ -789,6 +792,13 @@ export default function NuevaFacturaPage() {
                   } else {
                     const found = usuariosZona.find((u) => u.responsable === v);
                     setAreaFactura(found?.area ?? "");
+                    // El sector de la factura es el del técnico (un coordinador multizona atiende ambas zonas).
+                    if (found?.sector) {
+                      setSectorForm(found.sector);
+                      const porDefecto = found.sector === "Costa Caribe" ? "Barranquilla" : found.sector === "Bogota" ? "Bogotá" : "";
+                      // Solo reemplaza la ciudad si estaba vacía o era la ciudad por defecto de la otra zona.
+                      setCiudad((prev) => (prev && prev !== "Bogotá" && prev !== "Barranquilla" ? prev : porDefecto || prev));
+                    }
                   }
                 }}
               >
@@ -843,16 +853,16 @@ export default function NuevaFacturaPage() {
 
       {duplicada ? (
         <div className="flex items-start gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3">
-          <span className="text-lg text-yellow-400" aria-hidden>
+          <span className="text-lg text-warning" aria-hidden>
             ⚠
           </span>
           <div>
-            <p className="text-sm font-semibold text-yellow-400">Factura duplicada</p>
-            <p className="mt-1 text-xs text-yellow-300">{saveError}</p>
+            <p className="text-sm font-semibold text-warning">Factura duplicada</p>
+            <p className="mt-1 text-xs text-warning">{saveError}</p>
           </div>
         </div>
       ) : saveError ? (
-        <p className="text-sm text-red-400">{saveError}</p>
+        <p className="text-sm text-danger">{saveError}</p>
       ) : null}
 
       <Button
@@ -860,7 +870,7 @@ export default function NuevaFacturaPage() {
         disabled={uploadState === "saving" || !imagenUrl.trim() || duplicada}
         className={
           duplicada
-            ? "w-full cursor-not-allowed bg-[#525A72]/30 text-[#525A72] hover:bg-[#525A72]/30"
+            ? "w-full cursor-not-allowed bg-muted text-muted-foreground hover:bg-muted"
             : "w-full bg-bia-aqua text-bia-blue font-semibold hover:bg-bia-blue-mid"
         }
       >

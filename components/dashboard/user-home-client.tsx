@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCOP, formatDateDDMMYYYY, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import type { Session } from "next-auth";
+import { AlertCircle, CheckCircle2, Receipt, Wallet } from "lucide-react";
+import { CountUp } from "@/components/shared/count-up";
+import { MetricLabel } from "@/components/shared/metric-label";
+import { SkeletonCard } from "@/components/shared/skeleton-card";
 
 type FacturaItem = Record<string, unknown>;
 type EntregaItem = Record<string, unknown>;
@@ -104,44 +108,44 @@ export function UserHomeClient({ user }: { user: Session["user"] }) {
     <div className="space-y-4">
 
       {/* ── PERFIL ── */}
-      <Card className="border-white/5 bg-[#0A1B4D] text-white">
+      <Card className="glass-strong text-foreground">
         <CardContent className="pt-6 flex items-center gap-4">
-          <Avatar className="h-14 w-14 border border-white/20">
-            <AvatarFallback className="bg-[#001035] text-white">{initials(String(user.name || "MiCaja"))}</AvatarFallback>
+          <Avatar className="h-14 w-14 border border-border">
+            <AvatarFallback className="glass text-foreground">{initials(String(user.name || "MiCaja"))}</AvatarFallback>
           </Avatar>
           <div>
             <p className="text-lg font-semibold">{user.name}</p>
-            <p className="text-sm text-[#8892A4]">{user.cargo || "Sin cargo"}</p>
-            <p className="text-xs text-[#525A72]">{user.area || "Sin area"} · {user.sector || "Sin sector"}</p>
+            <p className="text-sm text-muted-foreground">{user.cargo || "Sin cargo"}</p>
+            <p className="text-xs text-muted-foreground">{user.area || "Sin area"} · {user.sector || "Sin sector"}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* ── 3 MÉTRICAS ── */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-3">
-          {[0,1,2].map((i) => <div key={i} className="h-24 animate-pulse rounded-xl bg-[#001035]" />)}
+        <div className="grid grid-cols-3 gap-3" aria-busy="true">
+          {[0,1,2].map((i) => <SkeletonCard key={i} className="h-24" lines={3} />)}
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl bg-[#001035] p-4 border border-white/5">
-            <p className="text-xs text-[#8892A4] mb-1">💸 Recibido</p>
-            <p className="text-lg font-bold text-white">{formatCOP(totalRecibido)}</p>
-            <p className="text-xs text-[#525A72] mt-1">Total entregado</p>
+          <div className="glass lift p-4">
+            <MetricLabel icon={Wallet}>Recibido</MetricLabel>
+            <p className="text-lg font-semibold tracking-tight text-foreground tabular-nums"><CountUp value={totalRecibido} /></p>
+            <p className="text-xs text-muted-foreground mt-1">Total entregado</p>
           </div>
-          <div className="rounded-xl bg-[#001035] p-4 border border-white/5">
-            <p className="text-xs text-[#8892A4] mb-1">🧾 Aprobado</p>
-            <p className="text-lg font-bold text-[#08DDBC]">{formatCOP(totalAprobado)}</p>
-            <p className="text-xs text-[#525A72] mt-1">Facturas aprobadas</p>
+          <div className="glass lift p-4">
+            <MetricLabel icon={Receipt}>Aprobado</MetricLabel>
+            <p className="text-lg font-semibold tracking-tight text-foreground tabular-nums"><CountUp value={totalAprobado} /></p>
+            <p className="text-xs text-muted-foreground mt-1">Facturas aprobadas</p>
           </div>
-          <div className="rounded-xl bg-[#001035] p-4 border border-white/5">
-            <p className="text-xs text-[#8892A4] mb-1">
-              {saldo >= 0 ? "✅ Total" : "🔴 Excedido"}
+          <div className="glass lift p-4">
+            <MetricLabel icon={saldo >= 0 ? CheckCircle2 : AlertCircle}>
+              {saldo >= 0 ? "Total" : "Excedido"}
+            </MetricLabel>
+            <p className={`text-lg font-semibold tracking-tight tabular-nums ${saldo >= 0 ? "text-success" : "text-danger"}`}>
+              <CountUp value={Math.abs(saldo)} />
             </p>
-            <p className={`text-lg font-bold ${saldo >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-              {formatCOP(Math.abs(saldo))}
-            </p>
-            <p className="text-xs text-[#525A72] mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {saldo >= 0 ? "disponible" : "gastaste de más"}
             </p>
           </div>
@@ -150,51 +154,51 @@ export function UserHomeClient({ user }: { user: Session["user"] }) {
 
       {/* ── ALERTA ── */}
       {!loading && saldo > 0 && (
-        <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3">
-          <p className="text-sm text-yellow-400">
+        <div className="rise rounded-[22px] border border-yellow-500/20 bg-yellow-500/10 px-4 py-3">
+          <p className="text-sm text-warning">
             ⚠️ Tienes <span className="font-bold">{formatCOP(saldo)}</span> pendiente por legalizar
           </p>
         </div>
       )}
       {!loading && saldo < 0 && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
-          <p className="text-sm text-red-400">
+        <div className="rise rounded-[22px] border border-red-500/20 bg-red-500/10 px-4 py-3">
+          <p className="text-sm text-danger">
             🔴 Tus facturas aprobadas superan lo recibido por <span className="font-bold">{formatCOP(Math.abs(saldo))}</span>
           </p>
         </div>
       )}
       {!loading && saldo === 0 && totalRecibido > 0 && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-          <p className="text-sm text-emerald-400">✅ Todo legalizado — estás al día</p>
+        <div className="rise rounded-[22px] border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+          <p className="text-sm text-success">✅ Todo legalizado — estás al día</p>
         </div>
       )}
       {!loading && totalEnRevision > 0 && (
-        <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3">
-          <p className="text-sm text-blue-400">
+        <div className="rise rounded-[22px] border border-blue-500/20 bg-blue-500/10 px-4 py-3">
+          <p className="text-sm text-info">
             ⏳ <span className="font-bold">{formatCOP(totalEnRevision)}</span> en facturas pendientes de aprobación
           </p>
         </div>
       )}
 
       {/* ── ÚLTIMAS ENTREGAS ── */}
-      <Card className="border-white/5 bg-[#0A1B4D] text-white">
+      <Card className="glass-strong text-foreground">
         <CardHeader><CardTitle className="text-base">Últimas entregas</CardTitle></CardHeader>
         <CardContent>
-          {loading ? <p className="text-sm text-[#8892A4]">Cargando...</p> : (
+          {loading ? <p className="text-sm text-muted-foreground">Cargando...</p> : (
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10">
-                  <TableHead className="text-[#8892A4]">Fecha</TableHead>
-                  <TableHead className="text-[#8892A4]">Monto</TableHead>
+                <TableRow className="border-border">
+                  <TableHead className="text-muted-foreground">Fecha</TableHead>
+                  <TableHead className="text-muted-foreground">Monto</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {ultimasEntregas.length ? ultimasEntregas.map((e, i) => (
-                  <TableRow key={`ent-${i}`} className="border-white/5">
+                  <TableRow key={`ent-${i}`} className="border-border">
                     <TableCell>{formatDateDDMMYYYY(getCellCaseInsensitive(e, "Fecha", "Fecha_Entrega"))}</TableCell>
                     <TableCell>{formatCOP(parseMonto(getCellCaseInsensitive(e, "Monto_Entregado", "Monto")))}</TableCell>
                   </TableRow>
-                )) : <TableRow><TableCell colSpan={2} className="text-[#8892A4]">Sin entregas</TableCell></TableRow>}
+                )) : <TableRow><TableCell colSpan={2} className="text-muted-foreground">Sin entregas</TableCell></TableRow>}
               </TableBody>
             </Table>
           )}
@@ -202,31 +206,31 @@ export function UserHomeClient({ user }: { user: Session["user"] }) {
       </Card>
 
       {/* ── ÚLTIMAS FACTURAS ── */}
-      <Card className="border-white/5 bg-[#0A1B4D] text-white">
+      <Card className="glass-strong text-foreground">
         <CardHeader><CardTitle className="text-base">Últimas facturas</CardTitle></CardHeader>
         <CardContent>
-          {loading ? <p className="text-sm text-[#8892A4]">Cargando...</p> : (
+          {loading ? <p className="text-sm text-muted-foreground">Cargando...</p> : (
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10">
-                  <TableHead className="text-[#8892A4]">Fecha</TableHead>
-                  <TableHead className="text-[#8892A4]">Proveedor</TableHead>
-                  <TableHead className="text-[#8892A4]">Valor</TableHead>
-                  <TableHead className="text-[#8892A4]">Estado</TableHead>
+                <TableRow className="border-border">
+                  <TableHead className="text-muted-foreground">Fecha</TableHead>
+                  <TableHead className="text-muted-foreground">Proveedor</TableHead>
+                  <TableHead className="text-muted-foreground">Valor</TableHead>
+                  <TableHead className="text-muted-foreground">Estado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {ultimasFacturas.length ? ultimasFacturas.map((f, i) => {
                   const estado = String(getCellCaseInsensitive(f, "Estado", "Legalizado", "Verificado") || "Pendiente");
                   return (
-                    <TableRow key={`fac-${i}`} className="border-white/5">
+                    <TableRow key={`fac-${i}`} className="border-border">
                       <TableCell>{formatDateDDMMYYYY(getCellCaseInsensitive(f, "Fecha", "Fecha_Factura"))}</TableCell>
                       <TableCell>{String(getCellCaseInsensitive(f, "Proveedor", "Razon_Social") || "—")}</TableCell>
                       <TableCell>{formatCOP(parseMonto(getCellCaseInsensitive(f, "Monto_Factura", "Valor")))}</TableCell>
                       <TableCell><Badge variant="outline">{estado}</Badge></TableCell>
                     </TableRow>
                   );
-                }) : <TableRow><TableCell colSpan={4} className="text-[#8892A4]">Sin facturas</TableCell></TableRow>}
+                }) : <TableRow><TableCell colSpan={4} className="text-muted-foreground">Sin facturas</TableCell></TableRow>}
               </TableBody>
             </Table>
           )}

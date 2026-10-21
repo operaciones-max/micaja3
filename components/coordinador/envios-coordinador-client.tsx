@@ -11,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SIN_FILTRO } from "@/lib/filter-select";
+import { ZONA_TODAS } from "@/lib/coordinador-zona";
 import { formatCOP, formatDateDDMMYYYY, parseCOPString, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { uploadFileToStorage } from "@/lib/upload-client";
+import { Portal } from "@/components/shared/portal";
 
 type EnvioRow = Record<string, unknown>;
 
@@ -199,7 +201,8 @@ export function EnviosCoordinadorClient({
     setSubiendoComprobante(true);
     setOkMsg("");
 
-    const sectorUpload = sector || sessionSector || "Bogota";
+    // La carpeta de almacenamiento usa un sector real; con "Todas" se usa el del propio coordinador.
+    const sectorUpload = sector && sector !== ZONA_TODAS ? sector : sessionSector || "Bogota";
     const responsableUpload =
       responsable.trim() || uploadResponsableFallback || sessionResponsable || "coordinador";
 
@@ -312,7 +315,7 @@ export function EnviosCoordinadorClient({
 
   return (
     <div className="space-y-6">
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Nuevo envío</CardTitle>
         </CardHeader>
@@ -357,15 +360,15 @@ export function EnviosCoordinadorClient({
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-1 block text-sm text-[#8892A4]">
+              <label className="mb-1 block text-sm text-muted-foreground">
                 Comprobante (foto o PDF)
                 {subiendoComprobante ? (
-                  <span className="ml-2 text-xs text-[#08DDBC]">Subiendo y leyendo valor…</span>
+                  <span className="ml-2 text-xs text-foreground">Subiendo y leyendo valor…</span>
                 ) : null}
               </label>
-              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#525A72]/30 bg-[#001035] px-4 py-3 transition-colors hover:border-[#08DDBC]/50">
-                <span className="text-sm text-[#08DDBC]">Seleccionar archivo</span>
-                <span className="text-xs text-[#525A72]">
+              <label className="flex cursor-pointer items-center gap-3 glass px-4 py-3 transition-colors hover:border-foreground/30">
+                <span className="text-sm text-foreground">Seleccionar archivo</span>
+                <span className="text-xs text-muted-foreground">
                   {comprobanteFile?.name || "JPG, PNG o PDF"}
                 </span>
                 <input
@@ -380,14 +383,14 @@ export function EnviosCoordinadorClient({
               {comprobantePreview ? (
                 <div className="relative mt-3 inline-block">
                   {comprobanteEsPdf ? (
-                    <div className="rounded-lg border border-[#525A72]/20 bg-bia-blue px-4 py-6 text-center text-sm text-bia-gray-light">
+                    <div className="rounded-lg border border-border bg-bia-blue px-4 py-6 text-center text-sm text-bia-gray-light">
                       Vista previa PDF: {comprobanteFile?.name || "archivo"}
                     </div>
                   ) : (
                     <img
                       src={comprobantePreview}
                       alt="Comprobante"
-                      className="h-32 w-auto rounded-lg border border-[#525A72]/20 bg-white object-contain"
+                      className="h-32 w-auto rounded-lg border border-border bg-white object-contain"
                     />
                   )}
                   <button
@@ -402,7 +405,7 @@ export function EnviosCoordinadorClient({
               ) : null}
 
               {comprobanteUrl && !subiendoComprobante ? (
-                <p className="mt-1 text-xs text-[#08DDBC]">Comprobante guardado</p>
+                <p className="mt-1 text-xs text-foreground">Comprobante guardado</p>
               ) : null}
             </div>
 
@@ -424,7 +427,7 @@ export function EnviosCoordinadorClient({
                 {sending ? "Enviando..." : "Enviar dinero"}
               </Button>
               {okMsg ? (
-                <p className={`mt-2 text-sm ${okMsg.startsWith("✅") ? "text-emerald-400" : "text-amber-400"}`}>
+                <p className={`mt-2 text-sm ${okMsg.startsWith("✅") ? "text-success" : "text-warning"}`}>
                   {okMsg}
                 </p>
               ) : null}
@@ -433,7 +436,7 @@ export function EnviosCoordinadorClient({
         </CardContent>
       </Card>
 
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Envíos realizados</CardTitle>
         </CardHeader>
@@ -535,7 +538,7 @@ export function EnviosCoordinadorClient({
                               <img
                                 src={`/api/proxy-imagen?url=${encodeURIComponent(comp)}`}
                                 alt="Comprobante"
-                                className="h-10 w-10 rounded border border-[#525A72]/20 object-cover transition-colors hover:border-[#08DDBC]"
+                                className="h-10 w-10 rounded border border-border object-cover transition-colors hover:border-foreground"
                               />
                               <span className="pointer-events-none absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
                                 Ver comprobante
@@ -545,12 +548,12 @@ export function EnviosCoordinadorClient({
                             <button
                               type="button"
                               onClick={() => setImagenModal(comp)}
-                              className="text-xs text-[#08DDBC] hover:underline"
+                              className="text-xs text-foreground hover:underline"
                             >
                               🖼️ Ver
                             </button>
                           ) : (
-                            <span className="text-xs text-[#525A72]">—</span>
+                            <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell>{getCellCaseInsensitive(r, "Telefono") || "—"}</TableCell>
@@ -584,43 +587,45 @@ export function EnviosCoordinadorClient({
       </Card>
 
       {imagenModal ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setImagenModal(null)}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
-            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setImagenModal(null)}
           >
-            <div className="flex items-center justify-between bg-[#0A1B4D] px-4 py-2">
-              <span className="text-sm text-white">Comprobante de envío</span>
-              <button
-                type="button"
-                onClick={() => setImagenModal(null)}
-                className="text-[#525A72] hover:text-white"
-                aria-label="Cerrar"
-              >
-                ✕
-              </button>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between glass-strong px-4 py-2">
+                <span className="text-sm text-foreground">Comprobante de envío</span>
+                <button
+                  type="button"
+                  onClick={() => setImagenModal(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Cerrar"
+                >
+                  ✕
+                </button>
+              </div>
+              {drivePreviewEmbedUrl(imagenModal) ? (
+                <iframe
+                  title="Comprobante"
+                  src={drivePreviewEmbedUrl(imagenModal)!}
+                  className="h-[70vh] w-full border-0"
+                />
+              ) : (
+                <img
+                  src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
+                  alt="Comprobante"
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              )}
             </div>
-            {drivePreviewEmbedUrl(imagenModal) ? (
-              <iframe
-                title="Comprobante"
-                src={drivePreviewEmbedUrl(imagenModal)!}
-                className="h-[70vh] w-full border-0"
-              />
-            ) : (
-              <img
-                src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
-                alt="Comprobante"
-                className="max-h-[70vh] w-full object-contain"
-              />
-            )}
           </div>
-        </div>
+        </Portal>
       ) : null}
     </div>
   );

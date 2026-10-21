@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCOP, formatDateDDMMYYYY, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type EntregaItem = Record<string, unknown>;
 
@@ -71,7 +72,7 @@ export default function EntregasPage() {
 
   return (
     <>
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader className="space-y-3">
           <CardTitle>Entregas recibidas</CardTitle>
           <div className="grid grid-cols-2 gap-2">
@@ -120,19 +121,19 @@ export default function EntregasPage() {
                               <img
                                 src={`/api/proxy-imagen?url=${encodeURIComponent(compUrl)}`}
                                 alt="Comprobante"
-                                className="mx-auto h-10 w-10 rounded border border-[#525A72]/20 object-cover hover:border-[#08DDBC]"
+                                className="mx-auto h-10 w-10 rounded border border-border object-cover hover:border-foreground"
                               />
                             </button>
                           ) : compUrl.startsWith("https://") ? (
                             <button
                               type="button"
                               onClick={() => setImagenModal(compUrl)}
-                              className="text-xs text-[#08DDBC] hover:underline"
+                              className="text-xs text-foreground hover:underline"
                             >
                               🖼️ Ver
                             </button>
                           ) : (
-                            <span className="text-xs text-[#525A72]">—</span>
+                            <span className="text-xs text-muted-foreground">—</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -153,43 +154,45 @@ export default function EntregasPage() {
       </Card>
 
       {imagenModal ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setImagenModal(null)}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
-            onClick={(ev) => ev.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setImagenModal(null)}
           >
-            <div className="flex items-center justify-between bg-[#0A1B4D] px-4 py-2">
-              <span className="text-sm text-white">Comprobante de envío</span>
-              <button
-                type="button"
-                onClick={() => setImagenModal(null)}
-                className="text-[#525A72] hover:text-white"
-                aria-label="Cerrar"
-              >
-                ✕
-              </button>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
+              onClick={(ev) => ev.stopPropagation()}
+            >
+              <div className="flex items-center justify-between glass-strong px-4 py-2">
+                <span className="text-sm text-foreground">Comprobante de envío</span>
+                <button
+                  type="button"
+                  onClick={() => setImagenModal(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Cerrar"
+                >
+                  ✕
+                </button>
+              </div>
+              {drivePreviewEmbedUrl(imagenModal) ? (
+                <iframe
+                  title="Comprobante"
+                  src={drivePreviewEmbedUrl(imagenModal)!}
+                  className="h-[70vh] w-full border-0"
+                />
+              ) : (
+                <img
+                  src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
+                  alt="Comprobante"
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              )}
             </div>
-            {drivePreviewEmbedUrl(imagenModal) ? (
-              <iframe
-                title="Comprobante"
-                src={drivePreviewEmbedUrl(imagenModal)!}
-                className="h-[70vh] w-full border-0"
-              />
-            ) : (
-              <img
-                src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
-                alt="Comprobante"
-                className="max-h-[70vh] w-full object-contain"
-              />
-            )}
           </div>
-        </div>
+        </Portal>
       ) : null}
     </>
   );

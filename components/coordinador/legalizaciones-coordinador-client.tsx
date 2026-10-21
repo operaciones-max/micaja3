@@ -24,12 +24,12 @@ type LegRow = Record<string, unknown>;
 function estadoBadge(estado: string) {
   const e = estado.toLowerCase();
   if (e.includes("aprobado") && !e.includes("pendiente")) {
-    return <Badge className="border-emerald-700 bg-emerald-950 text-emerald-200">{estado}</Badge>;
+    return <Badge className="border-success/40 bg-success/15 text-success">{estado}</Badge>;
   }
   if (e.includes("rechaz")) {
-    return <Badge className="border-red-700 bg-red-950 text-red-200">{estado}</Badge>;
+    return <Badge className="border-danger/40 bg-danger/15 text-danger">{estado}</Badge>;
   }
-  return <Badge className="border-yellow-700 bg-yellow-950 text-yellow-200">{estado}</Badge>;
+  return <Badge className="border-warning/40 bg-warning/15 text-warning">{estado}</Badge>;
 }
 
 export function LegalizacionesCoordinadorClient() {
@@ -178,11 +178,11 @@ export function LegalizacionesCoordinadorClient() {
   return (
     <div className="space-y-4">
       {enviado ? (
-        <p className="rounded-lg border border-emerald-800 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200">
+        <p className="rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
           ✅ Reporte enviado correctamente
         </p>
       ) : null}
-      <Card className="border-bia-gray/20 bg-bia-blue-mid text-white">
+      <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Legalizaciones enviadas</CardTitle>
         </CardHeader>

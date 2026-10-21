@@ -15,8 +15,8 @@ export default async function GastosPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-white">Gastos Generales</h1>
-        <p className="mt-1 text-sm text-gray-400">
+        <h1 className="text-2xl font-semibold text-foreground">Gastos Generales</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Gastos registrados vía Telegram por coordinadores y admins
         </p>
       </div>

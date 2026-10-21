@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth-options";
 import { getSupabase } from "@/lib/supabase";
 import { parseSheetDate } from "@/lib/format";
 import { TABLES } from "@/lib/db-tables";
-import { sectorsEquivalent } from "@/lib/sector-normalize";
+import { puedeOperarZona } from "@/lib/coordinador-zona";
 import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
 
 type TransferDb = {
@@ -64,12 +64,7 @@ export async function GET(req: NextRequest) {
 
     let zonaSet: Set<string> | null = null;
     if (zonaSector && rol !== "user") {
-      if (rol === "admin") {
-        zonaSet = await responsablesEnZonaSheetSet(zonaSector);
-      } else if (
-        rol === "coordinador" &&
-        sectorsEquivalent(String(session.user.sector || ""), zonaSector)
-      ) {
+      if ((rol === "admin" || rol === "coordinador") && puedeOperarZona(session.user, zonaSector)) {
         zonaSet = await responsablesEnZonaSheetSet(zonaSector);
       } else {
         return NextResponse.json({ data: [] });

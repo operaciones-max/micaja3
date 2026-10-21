@@ -1,6 +1,7 @@
 "use client";
 
-import { Document, Font, Image, Page, Polygon, StyleSheet, Svg, Text, View } from "@react-pdf/renderer";
+import { Document, Font, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { LOGO_PDF_DATA_URI } from "@/lib/logo-pdf";
 import { normalizeFirmaDataUrlForPdf } from "@/lib/drive-image-url";
 
 Font.register({
@@ -99,10 +100,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: "#e0e0e0",
   },
+  logoImg: { width: 26, height: 26 },
   logoTexto: {
     fontSize: 24,
     fontWeight: 700,
-    color: "#001035",
+    color: "#0a0a0a",
     fontFamily: "Roboto",
     letterSpacing: 0.5,
   },
@@ -156,9 +158,8 @@ export function LegalizacionPdf({
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.logoContainer}>
-          <Svg width={18} height={24} viewBox="0 0 14 18">
-            <Polygon points="8,0 0,10 5,10 3,18 14,7 8,7 10,0" fill="#08DDBC" />
-          </Svg>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- logo en PDF */}
+          <Image style={styles.logoImg} src={LOGO_PDF_DATA_URI} />
           <Text style={styles.logoTexto}>Bia</Text>
         </View>
         <Text style={styles.title}>LEGALIZACION DE CAJA MENOR GASTOS</Text>
