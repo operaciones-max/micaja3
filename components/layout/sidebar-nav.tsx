@@ -1,5 +1,6 @@
 "use client";
 
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -66,6 +67,14 @@ export function SidebarNav({
   const pathname = usePathname();
   const rol = String(session.user?.rol || "user").toLowerCase();
   const items = navByRole(rol);
+  const navRef = useRef<HTMLElement>(null);
+  const [ind, setInd] = useState<{ top: number; height: number } | null>(null);
+
+  // El indicador se desliza hasta la opción activa
+  useLayoutEffect(() => {
+    const el = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    setInd(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
+  }, [pathname, rol]);
   const user = session.user;
   const nombre = user?.name || user?.email || "Usuario";
   const cargo = user?.cargo || user?.sector || "";
@@ -77,15 +86,27 @@ export function SidebarNav({
         className
       )}
     >
-      <div className="flex items-center gap-2 border-b border-border p-6">
-        <Logo size={36} />
+      <div className="group flex items-center gap-2 border-b border-border p-6">
+        <Logo
+          size={36}
+          className="transition-transform duration-500 ease-[var(--spring)] group-hover:-rotate-6 group-hover:scale-105"
+        />
         <div>
           <span className="text-lg font-bold tracking-wide text-foreground">Bia</span>
           <p className="text-xs text-muted-foreground">{process.env.NEXT_PUBLIC_APP_NAME || "MiCaja"}</p>
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto py-4">
+      <nav ref={navRef} className="relative flex flex-1 flex-col gap-1 overflow-y-auto py-4">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-3 top-0 rounded-full bg-[var(--glass-strong)] shadow-[var(--shadow),inset_0_1px_0_var(--rim-a)] transition-[transform,height,opacity] duration-[600ms] ease-[var(--spring)]"
+          style={{
+            height: ind?.height ?? 0,
+            opacity: ind ? 1 : 0,
+            transform: `translateY(${ind?.top ?? 0}px)`,
+          }}
+        />
         {items.map((item) => {
           const Icon = item.icon;
           const active =
@@ -96,14 +117,20 @@ export function SidebarNav({
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "mx-3 flex min-h-[44px] items-center gap-3 rounded-full px-4 py-3 text-sm transition-colors",
+                "group/nav relative z-10 mx-3 flex min-h-[44px] items-center gap-3 rounded-full px-4 py-3 text-sm transition-colors duration-300",
                 active
-                  ? "bg-foreground/10 font-semibold text-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "font-semibold text-foreground"
+                  : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
               )}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon
+                className={cn(
+                  "h-5 w-5 shrink-0 transition-transform duration-500 ease-[var(--spring)]",
+                  active ? "scale-110" : "group-hover/nav:scale-110"
+                )}
+              />
               {item.label}
             </Link>
           );

@@ -9,6 +9,7 @@ import {
 import { insertFactura, loadFacturas } from "@/lib/facturas-supabase";
 import { normalizeSector } from "@/lib/sector-normalize";
 import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
+import { zonaDeOperacion } from "@/lib/coordinador-zona";
 
 export type FacturaCreateBody = {
   fecha?: string;
@@ -95,7 +96,7 @@ export async function crearFacturaMicaja(
       return { ok: false, status: 400, error: "Falta responsable" };
     }
     if (rolPost === "coordinador") {
-      const setZ = await responsablesEnZonaSheetSet(String(s.user?.sector || ""));
+      const setZ = await responsablesEnZonaSheetSet(zonaDeOperacion(s.user ?? {}));
       const mine = String(s.user?.responsable || "").trim().toLowerCase();
       if (responsable.toLowerCase() !== mine && !setZ.has(responsable.toLowerCase())) {
         return { ok: false, status: 403, error: "Responsable fuera de su zona" };

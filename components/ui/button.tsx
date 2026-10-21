@@ -6,12 +6,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-[transform,background-color,border-color,color,box-shadow,opacity] duration-[450ms] ease-[var(--spring)] outline-none select-none hover:-translate-y-px focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(0,0,0,0.22)] hover:bg-primary/90 [a]:hover:bg-primary/90 dark:shadow-[0_8px_24px_rgba(255,255,255,0.12)]",
+          "relative overflow-hidden bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(0,0,0,0.22)] hover:bg-primary/90 [a]:hover:bg-primary/90 dark:shadow-[0_8px_24px_rgba(255,255,255,0.12)] after:pointer-events-none after:absolute after:inset-0 after:-translate-x-[130%] after:bg-[linear-gradient(105deg,transparent_35%,rgba(255,255,255,0.4)_50%,transparent_65%)] after:transition-transform after:duration-700 after:ease-[var(--ease)] hover:after:translate-x-[130%] dark:after:bg-[linear-gradient(105deg,transparent_35%,rgba(0,0,0,0.14)_50%,transparent_65%)]",
         outline:
           "border-border bg-card/70 text-foreground backdrop-blur-xl hover:bg-muted hover:text-foreground aria-expanded:bg-muted",
         secondary:

@@ -4,10 +4,10 @@ import { authOptions } from "@/lib/auth-options";
 import { getSupabase } from "@/lib/supabase";
 import { parseSheetDate, formatCOP } from "@/lib/format";
 import { TABLES } from "@/lib/db-tables";
-import { sectorsEquivalent, normalizeSector } from "@/lib/sector-normalize";
+import { normalizeSector } from "@/lib/sector-normalize";
 import { appPublicBaseUrl, escHtml, notificarUsuario } from "@/lib/notificaciones";
-import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
-import { limiteAprobacionZona } from "@/lib/coordinador-zona";
+import { findUsuarioByResponsable, responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
+import { limiteAprobacionZona, puedeOperarZona, zonaDeOperacion } from "@/lib/coordinador-zona";
 
 type EnvioDb = {
   transfer_id: string | null;
@@ -48,13 +48,9 @@ export async function GET(req: NextRequest) {
 
     let zonaSet: Set<string> | null = null;
     if (sectorQ) {
-      if (rol === "admin") zonaSet = await responsablesEnZonaSheetSet(sectorQ);
-      else if (
-        rol === "coordinador" &&
-        sectorsEquivalent(String(session.user.sector || ""), sectorQ)
-      )
-        zonaSet = await responsablesEnZonaSheetSet(sectorQ);
-      else return NextResponse.json({ data: [] });
+      const puede = (rol === "admin" || rol === "coordinador") && puedeOperarZona(session.user, sectorQ);
+      if (!puede) return NextResponse.json({ data: [] });
+      zonaSet = await responsablesEnZonaSheetSet(sectorQ);
     }
 
     const { data: rows, error } = await getSupabase()
@@ -126,7 +122,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (rol === "coordinador") {
-      const set = await responsablesEnZonaSheetSet(String(session.user.sector || ""));
+      const set = await responsablesEnZonaSheetSet(zonaDeOperacion(session.user));
       const yo = String(session.user.responsable || session.user.name || "")
         .trim()
         .toLowerCase();
@@ -147,8 +143,12 @@ export async function POST(req: NextRequest) {
 
     const ts = Date.now();
     const id = `ENV-${ts}`;
+    // La región del envío es la del destinatario (un coordinador multizona puede enviar a ambas zonas).
+    const destinatario = await findUsuarioByResponsable(responsable);
     const sectorCanon =
-      normalizeSector(String(body.sector ?? session.user.sector ?? "")) || "Bogota";
+      normalizeSector(destinatario?.sector ?? "") ||
+      normalizeSector(String(body.sector ?? session.user.sector ?? "")) ||
+      "Bogota";
 
     const sb = getSupabase();
     const { error: envErr } = await sb.from(TABLES.transfers).insert({
@@ -211,7 +211,7 @@ export async function DELETE(req: NextRequest) {
 
     if (rol === "coordinador") {
       const respEnvio = String((existing[0] as { assignee?: string }).assignee || "").trim().toLowerCase();
-      const set = await responsablesEnZonaSheetSet(String(session.user.sector || ""));
+      const set = await responsablesEnZonaSheetSet(zonaDeOperacion(session.user));
       const yo = String(session.user.responsable || session.user.name || "")
         .trim()
         .toLowerCase();

@@ -1,5 +1,7 @@
 "use client";
 
+import { Portal } from "@/components/shared/portal";
+
 type Props = {
   mensaje: string;
   onConfirmar: () => void;
@@ -22,31 +24,33 @@ export function BiaConfirm({
       : "rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90";
 
   return (
-    <div
-      role="presentation"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
-      onClick={onCancelar}
-    >
+    <Portal>
       <div
-        role="alertdialog"
-        aria-modal="true"
-        className="w-full max-w-sm glass-strong p-6"
-        onClick={(e) => e.stopPropagation()}
+        role="presentation"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
+        onClick={onCancelar}
       >
-        <p className="mb-6 text-sm text-foreground">{mensaje}</p>
-        <div className="flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancelar}
-            className="rounded-full bg-muted px-5 py-2 text-sm text-muted-foreground hover:bg-accent"
-          >
-            Cancelar
-          </button>
-          <button type="button" onClick={onConfirmar} className={confirmCls}>
-            {confirmLabel}
-          </button>
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          className="w-full max-w-sm glass-strong p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="mb-6 text-sm text-foreground">{mensaje}</p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onCancelar}
+              className="rounded-full bg-muted px-5 py-2 text-sm text-muted-foreground hover:bg-accent"
+            >
+              Cancelar
+            </button>
+            <button type="button" onClick={onConfirmar} className={confirmCls}>
+              {confirmLabel}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

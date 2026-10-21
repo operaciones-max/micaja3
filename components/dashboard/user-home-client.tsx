@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCOP, formatDateDDMMYYYY, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import type { Session } from "next-auth";
+import { AlertCircle, CheckCircle2, Receipt, Wallet } from "lucide-react";
+import { CountUp } from "@/components/shared/count-up";
+import { MetricLabel } from "@/components/shared/metric-label";
+import { SkeletonCard } from "@/components/shared/skeleton-card";
 
 type FacturaItem = Record<string, unknown>;
 type EntregaItem = Record<string, unknown>;
@@ -119,27 +123,27 @@ export function UserHomeClient({ user }: { user: Session["user"] }) {
 
       {/* ── 3 MÉTRICAS ── */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-3">
-          {[0,1,2].map((i) => <div key={i} className="h-24 animate-pulse glass" />)}
+        <div className="grid grid-cols-3 gap-3" aria-busy="true">
+          {[0,1,2].map((i) => <SkeletonCard key={i} className="h-24" lines={3} />)}
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-3">
-          <div className="glass p-4">
-            <p className="text-xs text-muted-foreground mb-1">💸 Recibido</p>
-            <p className="text-lg font-bold text-foreground">{formatCOP(totalRecibido)}</p>
+          <div className="glass lift p-4">
+            <MetricLabel icon={Wallet}>Recibido</MetricLabel>
+            <p className="text-lg font-semibold tracking-tight text-foreground tabular-nums"><CountUp value={totalRecibido} /></p>
             <p className="text-xs text-muted-foreground mt-1">Total entregado</p>
           </div>
-          <div className="glass p-4">
-            <p className="text-xs text-muted-foreground mb-1">🧾 Aprobado</p>
-            <p className="text-lg font-bold text-foreground">{formatCOP(totalAprobado)}</p>
+          <div className="glass lift p-4">
+            <MetricLabel icon={Receipt}>Aprobado</MetricLabel>
+            <p className="text-lg font-semibold tracking-tight text-foreground tabular-nums"><CountUp value={totalAprobado} /></p>
             <p className="text-xs text-muted-foreground mt-1">Facturas aprobadas</p>
           </div>
-          <div className="glass p-4">
-            <p className="text-xs text-muted-foreground mb-1">
-              {saldo >= 0 ? "✅ Total" : "🔴 Excedido"}
-            </p>
-            <p className={`text-lg font-bold ${saldo >= 0 ? "text-success" : "text-danger"}`}>
-              {formatCOP(Math.abs(saldo))}
+          <div className="glass lift p-4">
+            <MetricLabel icon={saldo >= 0 ? CheckCircle2 : AlertCircle}>
+              {saldo >= 0 ? "Total" : "Excedido"}
+            </MetricLabel>
+            <p className={`text-lg font-semibold tracking-tight tabular-nums ${saldo >= 0 ? "text-success" : "text-danger"}`}>
+              <CountUp value={Math.abs(saldo)} />
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {saldo >= 0 ? "disponible" : "gastaste de más"}
@@ -150,26 +154,26 @@ export function UserHomeClient({ user }: { user: Session["user"] }) {
 
       {/* ── ALERTA ── */}
       {!loading && saldo > 0 && (
-        <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3">
+        <div className="rise rounded-[22px] border border-yellow-500/20 bg-yellow-500/10 px-4 py-3">
           <p className="text-sm text-warning">
             ⚠️ Tienes <span className="font-bold">{formatCOP(saldo)}</span> pendiente por legalizar
           </p>
         </div>
       )}
       {!loading && saldo < 0 && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+        <div className="rise rounded-[22px] border border-red-500/20 bg-red-500/10 px-4 py-3">
           <p className="text-sm text-danger">
             🔴 Tus facturas aprobadas superan lo recibido por <span className="font-bold">{formatCOP(Math.abs(saldo))}</span>
           </p>
         </div>
       )}
       {!loading && saldo === 0 && totalRecibido > 0 && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+        <div className="rise rounded-[22px] border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
           <p className="text-sm text-success">✅ Todo legalizado — estás al día</p>
         </div>
       )}
       {!loading && totalEnRevision > 0 && (
-        <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3">
+        <div className="rise rounded-[22px] border border-blue-500/20 bg-blue-500/10 px-4 py-3">
           <p className="text-sm text-info">
             ⏳ <span className="font-bold">{formatCOP(totalEnRevision)}</span> en facturas pendientes de aprobación
           </p>

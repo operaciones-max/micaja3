@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { applyFacturaEstadoById } from "@/lib/factura-estado-server";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
-import { limiteAprobacionZona } from "@/lib/coordinador-zona";
+import { limiteAprobacionZona, zonaDeOperacion, ZONA_TODAS } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString } from "@/lib/format";
 import { appPublicBaseUrl, escHtml, notificarAdmins } from "@/lib/notificaciones";
 import { generarResumenLegalizacionGemini } from "@/lib/gemini-resumen-legalizacion";
@@ -91,7 +91,10 @@ export async function POST(req: NextRequest) {
     const sector = String(session.user.sector || "").trim();
     const coordinadorNombre = String(session.user.responsable || session.user.name || "").trim();
     const userArea = String((session.user as { area?: string }).area || "").trim();
-    const zonaSet = rol === "coordinador" ? await responsablesEnZonaSheetSet(sector) : null;
+    // Coordinador de una zona: solo sus técnicos. Coordinador multizona: Bogotá y Costa Caribe.
+    const zonaOperacion = zonaDeOperacion(session.user);
+    const zonaSet = rol === "coordinador" ? await responsablesEnZonaSheetSet(zonaOperacion) : null;
+    const zonaLegible = rol === "coordinador" && zonaOperacion === ZONA_TODAS ? "Bogotá y Costa Caribe" : sector;
     const mine = coordinadorNombre.toLowerCase();
 
     const facturas = await loadFacturas();
@@ -156,7 +159,7 @@ export async function POST(req: NextRequest) {
           tipoFactura: f.tipoFactura,
         })),
         coordinador: coordinadorNombre,
-        sector,
+        sector: zonaLegible,
         total: totalNum,
         limite: limiteZona,
       });
@@ -224,7 +227,7 @@ export async function POST(req: NextRequest) {
       `Nuevo reporte pendiente de firma.`,
       ``,
       `<b>Coordinador:</b> ${escHtml(coordinadorNombre)}`,
-      `<b>Zona:</b> ${escHtml(sector)}`,
+      `<b>Zona:</b> ${escHtml(zonaLegible)}`,
       `<b>Total:</b> ${escHtml(formatCOP(totalNum))}`,
       `<b>Período:</b> ${escHtml(periodoDe)} al ${escHtml(periodoHasta)}`,
       ``,

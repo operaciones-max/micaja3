@@ -22,7 +22,7 @@ const badgeVariants = cva(
         success:
           "rounded-full border border-success/30 bg-success/15 text-success [a]:hover:bg-success/20",
         warning:
-          "rounded-full border border-warning/30 bg-warning/15 text-warning [a]:hover:bg-warning/20",
+          "dot-beat rounded-full border border-warning/30 bg-warning/15 text-warning before:size-1.5 before:rounded-full before:bg-current [a]:hover:bg-warning/20",
         completed:
           "rounded-full border border-foreground/20 bg-foreground/10 text-foreground [a]:hover:bg-foreground/15",
       },

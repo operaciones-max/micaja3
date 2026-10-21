@@ -22,6 +22,7 @@ import {
   usuarioSheetUserActiveRaw,
 } from "@/lib/usuario-sheet-fields";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type BalanceApi = {
   responsable: string;
@@ -538,119 +539,121 @@ export function AdminUsuariosClient() {
       </Card>
 
       {modalMode ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
-          onClick={() => { setModalMode(null); setModalError(""); }}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="max-h-[90vh] w-full max-w-md overflow-y-auto glass-strong p-6"
-            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => { setModalMode(null); setModalError(""); }}
           >
-            <h3 className="mb-4 font-semibold text-foreground">
-              {modalMode === "agregar" ? "Nuevo usuario" : "Editar usuario"}
-            </h3>
-            {modalError ? (
-              <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-danger dark:text-danger">
-                <span className="mt-0.5 shrink-0 font-bold">⚠</span>
-                <span>{modalError}</span>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="max-h-[90vh] w-full max-w-md overflow-y-auto glass-strong p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-4 font-semibold text-foreground">
+                {modalMode === "agregar" ? "Nuevo usuario" : "Editar usuario"}
+              </h3>
+              {modalError ? (
+                <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm text-danger dark:text-danger">
+                  <span className="mt-0.5 shrink-0 font-bold">⚠</span>
+                  <span>{modalError}</span>
+                </div>
+              ) : null}
+              {(
+                [
+                  { label: "Nombre completo", key: "responsable" as const },
+                  { label: "Correo (@bia.app)", key: "email" as const },
+                  { label: "Cédula", key: "cedula" as const },
+                  { label: "Teléfono", key: "telefono" as const },
+                  { label: "Cargo", key: "cargo" as const },
+                ] as const
+              ).map((field) => (
+                <div key={field.key} className="mb-3">
+                  <label className="mb-1 block text-xs text-muted-foreground">{field.label}</label>
+                  <input
+                    value={formData[field.key]}
+                    onChange={(e) => setFormData((p) => ({ ...p, [field.key]: e.target.value }))}
+                    className="w-full glass px-3 py-2 text-sm text-foreground"
+                  />
+                </div>
+              ))}
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Rol</label>
+                <select
+                  value={formData.rol}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, rol: e.target.value as UsuarioForm["rol"] }))
+                  }
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="user">Usuario</option>
+                  <option value="coordinador">Coordinador</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
-            ) : null}
-            {(
-              [
-                { label: "Nombre completo", key: "responsable" as const },
-                { label: "Correo (@bia.app)", key: "email" as const },
-                { label: "Cédula", key: "cedula" as const },
-                { label: "Teléfono", key: "telefono" as const },
-                { label: "Cargo", key: "cargo" as const },
-              ] as const
-            ).map((field) => (
-              <div key={field.key} className="mb-3">
-                <label className="mb-1 block text-xs text-muted-foreground">{field.label}</label>
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Sector</label>
+                <select
+                  value={formData.sector}
+                  onChange={(e) => setFormData((p) => ({ ...p, sector: e.target.value }))}
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="Bogota">Bogotá</option>
+                  <option value="Costa Caribe">Costa Caribe</option>
+                </select>
+              </div>
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-muted-foreground">Área</label>
                 <input
-                  value={formData[field.key]}
-                  onChange={(e) => setFormData((p) => ({ ...p, [field.key]: e.target.value }))}
+                  value={formData.area}
+                  onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
                   className="w-full glass px-3 py-2 text-sm text-foreground"
                 />
               </div>
-            ))}
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-muted-foreground">Rol</label>
-              <select
-                value={formData.rol}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, rol: e.target.value as UsuarioForm["rol"] }))
-                }
-                className="w-full glass px-3 py-2 text-sm text-foreground"
-              >
-                <option value="user">Usuario</option>
-                <option value="coordinador">Coordinador</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-muted-foreground">Sector</label>
-              <select
-                value={formData.sector}
-                onChange={(e) => setFormData((p) => ({ ...p, sector: e.target.value }))}
-                className="w-full glass px-3 py-2 text-sm text-foreground"
-              >
-                <option value="Bogota">Bogotá</option>
-                <option value="Costa Caribe">Costa Caribe</option>
-              </select>
-            </div>
-            <div className="mb-3">
-              <label className="mb-1 block text-xs text-muted-foreground">Área</label>
-              <input
-                value={formData.area}
-                onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
-                className="w-full glass px-3 py-2 text-sm text-foreground"
-              />
-            </div>
-            <div className="mb-3 flex items-center gap-2">
-              <input
-                id="ua"
-                type="checkbox"
-                checked={formData.userActive}
-                onChange={(e) => setFormData((p) => ({ ...p, userActive: e.target.checked }))}
-                className="rounded border-bia-gray/40"
-              />
-              <label htmlFor="ua" className="text-sm text-bia-gray-light">
-                Cuenta activa
-              </label>
-            </div>
-            <div className="mb-4">
-              <label className="mb-1 block text-xs text-muted-foreground">
-                PIN {modalMode === "editar" ? "(dejar vacío para no cambiar)" : ""}
-              </label>
-              <input
-                value={formData.pin}
-                onChange={(e) => setFormData((p) => ({ ...p, pin: e.target.value }))}
-                type="password"
-                autoComplete="new-password"
-                className="w-full glass px-3 py-2 text-sm text-foreground"
-              />
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => { setModalMode(null); setModalError(""); }}
-                className="rounded-xl bg-muted px-4 py-2 text-sm text-muted-foreground"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => void guardarUsuario()}
-                className="rounded-xl bg-bia-aqua px-4 py-2 text-sm font-semibold text-bia-blue"
-              >
-                {modalMode === "agregar" ? "Crear usuario" : "Guardar cambios"}
-              </button>
+              <div className="mb-3 flex items-center gap-2">
+                <input
+                  id="ua"
+                  type="checkbox"
+                  checked={formData.userActive}
+                  onChange={(e) => setFormData((p) => ({ ...p, userActive: e.target.checked }))}
+                  className="rounded border-bia-gray/40"
+                />
+                <label htmlFor="ua" className="text-sm text-bia-gray-light">
+                  Cuenta activa
+                </label>
+              </div>
+              <div className="mb-4">
+                <label className="mb-1 block text-xs text-muted-foreground">
+                  PIN {modalMode === "editar" ? "(dejar vacío para no cambiar)" : ""}
+                </label>
+                <input
+                  value={formData.pin}
+                  onChange={(e) => setFormData((p) => ({ ...p, pin: e.target.value }))}
+                  type="password"
+                  autoComplete="new-password"
+                  className="w-full glass px-3 py-2 text-sm text-foreground"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setModalMode(null); setModalError(""); }}
+                  className="rounded-xl bg-muted px-4 py-2 text-sm text-muted-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void guardarUsuario()}
+                  className="rounded-xl bg-bia-aqua px-4 py-2 text-sm font-semibold text-bia-blue"
+                >
+                  {modalMode === "agregar" ? "Crear usuario" : "Guardar cambios"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       ) : null}
     </div>
   );

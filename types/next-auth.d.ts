@@ -21,6 +21,8 @@ declare module "next-auth" {
       cargo?: string;
       cedula?: string;
       telefono?: string;
+      /** Zona sobre la que opera: "Todas" (admin y coordinadores multizona) o su sector. */
+      zona?: string;
     } & DefaultSession["user"];
   }
 }
@@ -35,5 +37,6 @@ declare module "next-auth/jwt" {
     cedula?: string;
     telefono?: string;
     email?: string;
+    zona?: string;
   }
 }

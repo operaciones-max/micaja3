@@ -21,7 +21,7 @@ export function BiaAlert({ type, message }: { type: AlertType; message: string }
   return (
     <div
       role="status"
-      className={`flex items-center gap-3 rounded-[22px] border px-4 py-3 text-sm backdrop-blur-xl ${styles[type]}`}
+      className={`rise flex items-center gap-3 rounded-[22px] border px-4 py-3 text-sm backdrop-blur-xl ${styles[type]}`}
     >
       <span className="grid size-7 shrink-0 place-items-center rounded-full bg-foreground/10 text-xs font-bold" aria-hidden>
         {icons[type]}

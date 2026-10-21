@@ -11,9 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SIN_FILTRO } from "@/lib/filter-select";
+import { ZONA_TODAS } from "@/lib/coordinador-zona";
 import { formatCOP, formatDateDDMMYYYY, parseCOPString, parseMonto } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { uploadFileToStorage } from "@/lib/upload-client";
+import { Portal } from "@/components/shared/portal";
 
 type EnvioRow = Record<string, unknown>;
 
@@ -199,7 +201,8 @@ export function EnviosCoordinadorClient({
     setSubiendoComprobante(true);
     setOkMsg("");
 
-    const sectorUpload = sector || sessionSector || "Bogota";
+    // La carpeta de almacenamiento usa un sector real; con "Todas" se usa el del propio coordinador.
+    const sectorUpload = sector && sector !== ZONA_TODAS ? sector : sessionSector || "Bogota";
     const responsableUpload =
       responsable.trim() || uploadResponsableFallback || sessionResponsable || "coordinador";
 
@@ -584,43 +587,45 @@ export function EnviosCoordinadorClient({
       </Card>
 
       {imagenModal ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setImagenModal(null)}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
-            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setImagenModal(null)}
           >
-            <div className="flex items-center justify-between glass-strong px-4 py-2">
-              <span className="text-sm text-foreground">Comprobante de envío</span>
-              <button
-                type="button"
-                onClick={() => setImagenModal(null)}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Cerrar"
-              >
-                ✕
-              </button>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between glass-strong px-4 py-2">
+                <span className="text-sm text-foreground">Comprobante de envío</span>
+                <button
+                  type="button"
+                  onClick={() => setImagenModal(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Cerrar"
+                >
+                  ✕
+                </button>
+              </div>
+              {drivePreviewEmbedUrl(imagenModal) ? (
+                <iframe
+                  title="Comprobante"
+                  src={drivePreviewEmbedUrl(imagenModal)!}
+                  className="h-[70vh] w-full border-0"
+                />
+              ) : (
+                <img
+                  src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
+                  alt="Comprobante"
+                  className="max-h-[70vh] w-full object-contain"
+                />
+              )}
             </div>
-            {drivePreviewEmbedUrl(imagenModal) ? (
-              <iframe
-                title="Comprobante"
-                src={drivePreviewEmbedUrl(imagenModal)!}
-                className="h-[70vh] w-full border-0"
-              />
-            ) : (
-              <img
-                src={`/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`}
-                alt="Comprobante"
-                className="max-h-[70vh] w-full object-contain"
-              />
-            )}
           </div>
-        </div>
+        </Portal>
       ) : null}
     </div>
   );

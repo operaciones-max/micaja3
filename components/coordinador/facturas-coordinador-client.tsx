@@ -28,6 +28,7 @@ import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
 import { facturaImageUrlForDisplay } from "@/lib/drive-image-url";
 import { sheetANombreBiaTrue } from "@/lib/nueva-factura-validation";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type FacturaItem = Record<string, unknown>;
 
@@ -42,7 +43,8 @@ const COLS = 14;
 
 export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
   const { data } = useSession();
-  const sector = String(data?.user?.sector || "");
+  // Zona de operación: su zona, o "Todas" si es coordinador multizona.
+  const sector = String(data?.user?.zona || data?.user?.sector || "");
   const [zoneUsers, setZoneUsers] = useState<{ responsable: string }[]>([]);
 
   useEffect(() => {
@@ -704,13 +706,15 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
 
       <FacturaImagenModal src={imagenModal} onClose={() => setImagenModal(null)} />
 
-      <Link
-        href="/facturas/nueva"
-        className="fixed bottom-20 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand text-lg text-brand-foreground shadow-lg hover:bg-brand/90"
-        aria-label="Nueva factura"
-      >
-        +
-      </Link>
+      <Portal>
+        <Link
+          href="/facturas/nueva"
+          className="fixed bottom-28 right-4 z-40 md:bottom-8 inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand text-lg text-brand-foreground shadow-lg hover:bg-brand/90"
+          aria-label="Nueva factura"
+        >
+          +
+        </Link>
+      </Portal>
     </Card>
   );
 }

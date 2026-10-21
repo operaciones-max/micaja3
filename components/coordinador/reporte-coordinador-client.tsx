@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
-import { etiquetaZona, limiteAprobacionZona } from "@/lib/coordinador-zona";
+import { ZONA_TODAS, etiquetaZona, limiteAprobacionZona } from "@/lib/coordinador-zona";
 import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
 import { facturaRowToFacturaPdfForLegalizacion } from "@/lib/legalizacion-factura-pdf-map";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
@@ -33,7 +33,9 @@ function reporteId(r: ReporteRow): string {
 
 export function ReporteCoordinadorClient() {
   const { data } = useSession();
-  const sector = String(data?.user?.sector || "");
+  const sectorPropio = String(data?.user?.sector || "");
+  // Zona de operación: su zona, o "Todas" si es coordinador multizona (Bogotá y Costa Caribe).
+  const sector = String(data?.user?.zona || sectorPropio);
   const coordinador = String(data?.user?.responsable || data?.user?.name || "");
   const zonaLabel = etiquetaZona(sector);
   const limite = limiteAprobacionZona(sector);
@@ -139,7 +141,7 @@ export function ReporteCoordinadorClient() {
             body: JSON.stringify({
               facturas,
               coordinador: data?.user?.responsable || data?.user?.name || "",
-              sector: data?.user?.sector || "",
+              sector: sectorPropio,
               total: totalSeleccionado,
               limite,
             }),
@@ -453,7 +455,7 @@ export function ReporteCoordinadorClient() {
                     valor: parseCOPString(String(getCellCaseInsensitive(f, "Monto_Factura", "Valor") || "0")),
                   }))}
                   coordinador={coordinador}
-                  sector={sector}
+                  sector={sector === ZONA_TODAS ? zonaLabel : sector}
                 />
 
                 <Button

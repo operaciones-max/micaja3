@@ -26,7 +26,7 @@ export function Header({ serverSession }: { serverSession: Session }) {
             <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="left" className="w-72 border-border p-0">
-            <SidebarNav session={serverSession} className="min-h-screen border-0" />
+            <SidebarNav session={serverSession} className="min-h-screen w-full border-0" />
           </SheetContent>
         </Sheet>
         <span className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">

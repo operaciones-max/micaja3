@@ -21,6 +21,7 @@ import {
 } from "@/lib/nueva-factura-validation";
 import { findFacturaDuplicadaPorNitNumResponsable } from "@/lib/factura-duplicada-micaja";
 import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
+import { zonaDeOperacion } from "@/lib/coordinador-zona";
 import { appPublicBaseUrl, escHtml, notificarUsuario } from "@/lib/notificaciones";
 import type { FacturaRow } from "@/types/models";
 
@@ -59,15 +60,14 @@ async function duplicateEditIfAny(
 }
 
 async function puedeCoordinadorEditar(
-  session: { user?: { rol?: string; sector?: string } },
+  session: { user?: { rol?: string; sector?: string; email?: string | null } },
   row: FacturaRow
 ): Promise<boolean> {
   const rol = String(session.user?.rol || "").toLowerCase();
   if (rol === "admin") return true;
   if (rol !== "coordinador") return false;
-  const sector = String(session.user?.sector || "");
   const resp = getCellCaseInsensitive(row, "Responsable");
-  const set = await responsablesEnZonaSheetSet(sector);
+  const set = await responsablesEnZonaSheetSet(zonaDeOperacion(session.user ?? {}));
   return set.has(resp.toLowerCase());
 }
 

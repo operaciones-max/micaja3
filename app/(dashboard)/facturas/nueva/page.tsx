@@ -161,25 +161,27 @@ export default function NuevaFacturaPage() {
   const [responsableTarget, setResponsableTarget] = useState("");
   const [areaFactura, setAreaFactura] = useState("");
   const [usuariosZona, setUsuariosZona] = useState<
-    { responsable: string; cargo: string; email: string; area: string }[]
+    { responsable: string; cargo: string; email: string; area: string; sector: string }[]
   >([]);
 
   const sessionSector = String(user?.sector || "");
   const rol = String(user?.rol || "user").toLowerCase();
+  // "Todas" si el coordinador opera sobre Bogotá y Costa Caribe.
+  const zonaOperacion = String(user?.zona || sessionSector);
 
   useEffect(() => {
     if (rol !== "coordinador" && rol !== "admin") return;
     const url =
       rol === "admin"
         ? "/api/usuarios?rol=user"
-        : `/api/usuarios?sector=${encodeURIComponent(sessionSector)}&rol=user`;
+        : `/api/usuarios?sector=${encodeURIComponent(zonaOperacion)}&rol=user`;
     let cancelled = false;
     fetch(url)
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
         const rows = Array.isArray(d.data) ? d.data : [];
-        const list: { responsable: string; cargo: string; email: string; area: string }[] = [];
+        const list: { responsable: string; cargo: string; email: string; area: string; sector: string }[] = [];
         for (const row of rows) {
           const rec = row as Record<string, unknown>;
           const responsable = String(getCellCaseInsensitive(rec, "Responsable") || "").trim();
@@ -190,6 +192,7 @@ export default function NuevaFacturaPage() {
             email,
             cargo: String(getCellCaseInsensitive(rec, "Cargo") || "").trim(),
             area: String(getCellCaseInsensitive(rec, "Area", "Área") || "").trim(),
+            sector: String(getCellCaseInsensitive(rec, "Sector") || "").trim(),
           });
         }
         list.sort((a, b) => a.responsable.localeCompare(b.responsable, "es"));
@@ -201,7 +204,7 @@ export default function NuevaFacturaPage() {
     return () => {
       cancelled = true;
     };
-  }, [rol, sessionSector]);
+  }, [rol, zonaOperacion]);
 
   useEffect(() => {
     const s = String(user?.sector || "");
@@ -789,6 +792,13 @@ export default function NuevaFacturaPage() {
                   } else {
                     const found = usuariosZona.find((u) => u.responsable === v);
                     setAreaFactura(found?.area ?? "");
+                    // El sector de la factura es el del técnico (un coordinador multizona atiende ambas zonas).
+                    if (found?.sector) {
+                      setSectorForm(found.sector);
+                      const porDefecto = found.sector === "Costa Caribe" ? "Barranquilla" : found.sector === "Bogota" ? "Bogotá" : "";
+                      // Solo reemplaza la ciudad si estaba vacía o era la ciudad por defecto de la otra zona.
+                      setCiudad((prev) => (prev && prev !== "Bogotá" && prev !== "Barranquilla" ? prev : porDefecto || prev));
+                    }
                   }
                 }}
               >

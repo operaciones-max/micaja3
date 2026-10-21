@@ -15,6 +15,7 @@ import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
 import { facturaImageUrlForDisplay } from "@/lib/drive-image-url";
 import { sheetANombreBiaTrue } from "@/lib/nueva-factura-validation";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { Portal } from "@/components/shared/portal";
 
 type FacturaItem = Record<string, unknown>;
 
@@ -279,9 +280,11 @@ export function FacturasUsuarioClient() {
 
       <FacturaImagenModal src={imagenModal} onClose={() => setImagenModal(null)} />
 
-      <Link href="/facturas/nueva" className="fixed bottom-20 right-4 z-40">
-        <Button className="h-12 w-12 rounded-full bg-bia-aqua text-bia-blue font-semibold shadow-lg">+</Button>
-      </Link>
+      <Portal>
+        <Link href="/facturas/nueva" className="fixed bottom-28 right-4 z-40 md:bottom-8">
+          <Button className="h-12 w-12 rounded-full bg-bia-aqua text-bia-blue font-semibold shadow-lg">+</Button>
+        </Link>
+      </Portal>
     </div>
   );
 }

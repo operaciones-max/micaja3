@@ -11,6 +11,7 @@ import {
   deleteUsuarioMicajaByEmail,
   patchUsuarioMicaja,
 } from "@/lib/usuarios-micaja-crud";
+import { ZONA_TODAS, zonaDeOperacion } from "@/lib/coordinador-zona";
 import {
   getUsuariosFromSheet,
   invalidarCacheUsuarios,
@@ -35,8 +36,11 @@ export async function GET(req: NextRequest) {
     let filtrados = usuarios;
 
     if (rolSesion === "coordinador") {
-      const sectorCoord = sheetSectorToCanon(String(session.user.sector || ""));
-      filtrados = filtrados.filter((u) => u.sector === sectorCoord);
+      // Coordinador multizona: ve técnicos de Bogotá y Costa Caribe. Los demás, solo su zona.
+      if (zonaDeOperacion(session.user) !== ZONA_TODAS) {
+        const sectorCoord = sheetSectorToCanon(String(session.user.sector || ""));
+        filtrados = filtrados.filter((u) => u.sector === sectorCoord);
+      }
     } else if (rolSesion === "user") {
       const sectorUser = sheetSectorToCanon(String(session.user.sector || ""));
       filtrados = filtrados.filter((u) => u.sector === sectorUser);
@@ -44,7 +48,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    if (sectorQ) {
+    if (sectorQ && sectorQ !== ZONA_TODAS) {
       const sectorNorm = sheetSectorToCanon(sectorQ);
       filtrados = filtrados.filter((u) => u.sector === sectorNorm);
     }

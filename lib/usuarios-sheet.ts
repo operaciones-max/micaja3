@@ -2,6 +2,7 @@ import { normalizeEmailForAuth } from "@/lib/email-normalize";
 import { normalizeSector } from "@/lib/sector-normalize";
 import { getSupabase } from "@/lib/supabase";
 import { TABLES } from "@/lib/db-tables";
+import { ZONA_TODAS, esCoordinadorMultizona } from "@/lib/coordinador-zona";
 
 export type UsuarioSheet = {
   responsable: string;
@@ -133,20 +134,23 @@ export async function findUsuarioByResponsable(nombre: string): Promise<UsuarioS
 
 export async function getUsuariosDeZona(sector: string): Promise<UsuarioSheet[]> {
   const usuarios = await getUsuariosFromSheet();
+  if (sector === ZONA_TODAS) return usuarios.filter((u) => u.userActive);
   const canon = sheetSectorToCanon(sector);
   return usuarios.filter((u) => u.sector === canon && u.userActive);
 }
 
+/** Responsables (técnicos y coordinadores activos) de una zona; `ZONA_TODAS` incluye ambas. */
 export async function responsablesEnZonaSheetSet(sector: string): Promise<Set<string>> {
   const usuarios = await getUsuariosFromSheet();
-  const target = sheetSectorToCanon(sector);
+  const todas = sector === ZONA_TODAS;
+  const target = todas ? null : sheetSectorToCanon(sector);
   return new Set(
     usuarios
       .filter(
         (u) =>
           u.userActive &&
           (u.rol === "user" || u.rol === "coordinador") &&
-          u.sector === target
+          (todas || u.sector === target)
       )
       .map((u) => u.responsable.trim().toLowerCase())
       .filter(Boolean)
@@ -171,7 +175,11 @@ export async function getTelefonosCoordinadoresZona(sector: string): Promise<str
   const canon = sheetSectorToCanon(sector);
   return usuarios
     .filter(
-      (u) => u.rol === "coordinador" && u.userActive && u.telefono && u.sector === canon
+      (u) =>
+        u.rol === "coordinador" &&
+        u.userActive &&
+        u.telefono &&
+        (u.sector === canon || esCoordinadorMultizona(u.email))
     )
     .map((u) => u.telefono.replace(/[^0-9]/g, ""));
 }

@@ -1,3 +1,4 @@
+import { esCoordinadorMultizona } from "@/lib/coordinador-zona";
 import {
   findUsuarioByResponsable,
   getUsuariosFromSheet,
@@ -123,7 +124,7 @@ export async function notificarCoordinadoresZona(sector: string, mensajeHtml: st
       u.rol === "coordinador" &&
       u.userActive &&
       u.telegram_chat_id?.trim() &&
-      u.sector === canon
+      (u.sector === canon || esCoordinadorMultizona(u.email))
   );
   for (const coord of coords) {
     void enviarTelegram(coord.telegram_chat_id!.trim(), mensajeHtml).catch(() => {});

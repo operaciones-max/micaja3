@@ -7,6 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { etiquetaZona, LIMITE_CAJA_MENOR } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString, parseMonto, parseSheetDate } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { ClipboardList, Landmark, PenLine, Receipt, Clock, Wallet } from "lucide-react";
+import { CountUp } from "@/components/shared/count-up";
+import { MetricLabel } from "@/components/shared/metric-label";
+import { SkeletonCard } from "@/components/shared/skeleton-card";
+import { StackedBar } from "@/components/shared/stacked-bar";
 
 type FacturaRow = Record<string, unknown>;
 type EntregaRow = Record<string, unknown>;
@@ -26,15 +31,6 @@ function reporteId(r: ReporteRow): string {
 }
 function respKey(r: Record<string, unknown>): string {
   return String(getCellCaseInsensitive(r, "Responsable") || "").trim().toLowerCase();
-}
-
-function BarraProgreso({ pctFacturado, pctPendiente }: { pctFacturado: number; pctPendiente: number }) {
-  return (
-    <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-track shadow-inner">
-      <div style={{ width: `${pctFacturado}%` }} className="h-full rounded-full bg-brand transition-all duration-500" />
-      <div style={{ width: `${pctPendiente}%` }} className="h-full rounded-full bg-yellow-400 transition-all duration-500" />
-    </div>
-  );
 }
 
 function montoFacturaAprobada(f: FacturaRow): number {
@@ -63,26 +59,29 @@ function CajaCard({ titulo, subtitulo, limite, tecnicos, entregado, facturado, p
 }) {
   return (
     <div className="glass p-5">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           <h3 className="text-base font-bold text-foreground">{titulo}</h3>
           <p className="text-xs text-muted-foreground">{subtitulo} · Límite {formatCOP(limite)} · {tecnicos} técnicos</p>
         </div>
-        <span className="text-lg font-bold text-foreground">{pctEntregado}%</span>
+        <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+          <CountUp value={pctEntregado} format={(n) => `${n}%`} />
+        </span>
       </div>
-      <BarraProgreso pctFacturado={pctFacturado} pctPendiente={pctPendiente} />
-      <div className="mt-1 flex gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-brand inline-block" />Facturado</span>
-        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-400 inline-block" />Pendiente</span>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <div><p className="text-xs text-muted-foreground">💸 Entregado</p><p className="font-bold text-foreground text-sm">{formatCOP(entregado)}</p></div>
-        <div><p className="text-xs text-muted-foreground">🧾 Facturado</p><p className="font-bold text-foreground text-sm">{formatCOP(facturado)}</p></div>
-        <div><p className="text-xs text-muted-foreground">⚠️ Pendiente legalizar</p><p className="font-bold text-warning text-sm">{formatCOP(pendiente)}</p></div>
+      <StackedBar
+        segments={[
+          { key: "f", label: "Facturado", pct: pctFacturado, value: formatCOP(facturado), className: "bg-brand", dotClassName: "bg-brand" },
+          { key: "p", label: "Pendiente", pct: pctPendiente, value: formatCOP(pendiente), className: "bg-gradient-to-b from-yellow-200 to-yellow-400", dotClassName: "bg-yellow-400" },
+        ]}
+      />
+      <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-4">
+        <div><MetricLabel icon={Wallet}>Entregado</MetricLabel><p className="text-sm font-semibold text-foreground tabular-nums"><CountUp value={entregado} /></p></div>
+        <div><MetricLabel icon={Receipt}>Facturado</MetricLabel><p className="text-sm font-semibold text-foreground tabular-nums"><CountUp value={facturado} /></p></div>
+        <div><MetricLabel icon={Clock}>Pendiente legalizar</MetricLabel><p className="text-sm font-semibold text-warning tabular-nums"><CountUp value={pendiente} /></p></div>
         <div>
-          <p className="text-xs text-muted-foreground">🏦 En caja</p>
-          <p className={`font-bold text-sm ${enCaja >= 0 ? "text-success" : "text-danger"}`}>
-            {enCaja < 0 ? "-" : ""}{formatCOP(Math.abs(enCaja))}
+          <MetricLabel icon={Landmark}>En caja</MetricLabel>
+          <p className={`text-sm font-semibold tabular-nums ${enCaja >= 0 ? "text-success" : "text-danger"}`}>
+            {enCaja < 0 ? "-" : ""}<CountUp value={Math.abs(enCaja)} />
           </p>
         </div>
       </div>
@@ -194,7 +193,7 @@ export function AdminDashboardClient() {
       {/* ── CAJA MENOR ── */}
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <div className="h-48 animate-pulse glass" />
+          <SkeletonCard className="h-48" lines={4} />
         ) : (
           <CajaCard titulo="Caja menor" subtitulo="Bogotá + Costa Caribe" limite={LIMITE_CAJA_MENOR} tecnicos={totalTecnicos}
             entregado={caja.entregado} facturado={caja.facturado} pendiente={caja.pendiente} enCaja={caja.enCaja}
@@ -204,14 +203,18 @@ export function AdminDashboardClient() {
 
       {/* ── CONTADORES ── */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="glass p-4">
-          <p className="mb-1 text-xs text-muted-foreground">📋 Facturas pendientes</p>
-          <p className="text-2xl font-bold text-warning">{loading ? "—" : facturasPendientes}</p>
+        <div className="glass lift p-4">
+          <MetricLabel icon={ClipboardList}>Facturas pendientes</MetricLabel>
+          <p className="text-2xl font-semibold tracking-tight text-warning tabular-nums">
+            {loading ? "—" : <CountUp value={facturasPendientes} format={String} />}
+          </p>
           <p className="text-xs text-muted-foreground">por revisar</p>
         </div>
-        <div className="glass p-4">
-          <p className="mb-1 text-xs text-muted-foreground">✍️ Reportes por firmar</p>
-          <p className="text-2xl font-bold text-orange">{loading ? "—" : reportesPendientesFirma}</p>
+        <div className="glass lift p-4">
+          <MetricLabel icon={PenLine}>Reportes por firmar</MetricLabel>
+          <p className="text-2xl font-semibold tracking-tight text-orange tabular-nums">
+            {loading ? "—" : <CountUp value={reportesPendientesFirma} format={String} />}
+          </p>
           <p className="text-xs text-muted-foreground">pendientes</p>
         </div>
       </div>

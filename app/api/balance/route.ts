@@ -7,6 +7,7 @@ import {
   type MicajaBalanceRow,
 } from "@/lib/balance-micaja";
 import { sectorsEquivalent } from "@/lib/sector-normalize";
+import { ZONA_TODAS, zonaDeOperacion } from "@/lib/coordinador-zona";
 import { getUsuariosFromSheet } from "@/lib/usuarios-sheet";
 
 /**
@@ -21,12 +22,13 @@ export async function GET(req: NextRequest) {
 
   try {
     if (rol === "coordinador") {
-      const sector = String(session.user.sector || "").trim();
-      if (!sector) return NextResponse.json({ error: "Sin zona asignada" }, { status: 400 });
+      const zona = zonaDeOperacion(session.user);
+      if (!zona) return NextResponse.json({ error: "Sin zona asignada" }, { status: 400 });
+      const todas = zona === ZONA_TODAS;
 
-      const map = await loadMicajaBalancesByResponsable({ sectorRaw: sector });
+      const map = await loadMicajaBalancesByResponsable(todas ? undefined : { sectorRaw: zona });
       const usuarios = await getUsuariosFromSheet();
-      const enZona = usuarios.filter((u) => u.userActive && sectorsEquivalent(u.sector, sector));
+      const enZona = usuarios.filter((u) => u.userActive && (todas || sectorsEquivalent(u.sector, zona)));
       const nombres = new Set(enZona.map((u) => u.responsable.trim().toLowerCase()));
       for (const u of enZona) {
         if (!map.has(u.responsable)) map.set(u.responsable, { recibido: 0, gastado: 0 });

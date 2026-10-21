@@ -28,6 +28,7 @@ import {
 } from "@/lib/legalizacion-factura-pdf-map";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { AuditorFacturasPanel, type PanelFactura } from "@/components/shared/auditor-facturas-panel";
+import { Portal } from "@/components/shared/portal";
 
 type ReporteRow = Record<string, string>;
 type FacturaRow = Record<string, unknown>;
@@ -683,39 +684,41 @@ export function AdminReportesClient() {
       </Dialog>
 
       {imagenModal ? (
-        <div
-          role="presentation"
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setImagenModal(null)}
-        >
+        <Portal>
           <div
-            role="dialog"
-            aria-modal="true"
-            className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
-            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+            onClick={() => setImagenModal(null)}
           >
-            <div className="flex items-center justify-between glass-strong px-4 py-2">
-              <span className="text-sm font-medium text-foreground">Factura adjunta</span>
-              <button
-                type="button"
-                onClick={() => setImagenModal(null)}
-                className="text-muted-foreground hover:text-foreground"
-                aria-label="Cerrar"
-              >
-                ✕
-              </button>
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="w-full max-w-lg overflow-hidden rounded-xl bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between glass-strong px-4 py-2">
+                <span className="text-sm font-medium text-foreground">Factura adjunta</span>
+                <button
+                  type="button"
+                  onClick={() => setImagenModal(null)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="Cerrar"
+                >
+                  ✕
+                </button>
+              </div>
+              <img
+                src={
+                  imagenModal.startsWith("data:")
+                    ? imagenModal
+                    : `/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`
+                }
+                alt="Factura"
+                className="max-h-[70vh] w-full object-contain"
+              />
             </div>
-            <img
-              src={
-                imagenModal.startsWith("data:")
-                  ? imagenModal
-                  : `/api/proxy-imagen?url=${encodeURIComponent(imagenModal)}`
-              }
-              alt="Factura"
-              className="max-h-[70vh] w-full object-contain"
-            />
           </div>
-        </div>
+        </Portal>
       ) : null}
     </div>
   );
