@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { buildFxUrl } from "@/lib/fx-form-config";
-import { CheckCircle2, Download, ExternalLink, FileText } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileText, Loader2, RefreshCw } from "lucide-react";
+import { LIMITE_CAJA_MENOR } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString } from "@/lib/format";
 
 function pdfPreviewUrl(url: string): string {
@@ -30,6 +31,8 @@ export interface FxReporte {
   Total?: string | number;
   Estado?: string;
   PDF_URL?: string;
+  Fecha_ISO?: string;
+  Firma_Admin?: string;
 }
 
 interface EnviarFxModalProps {
@@ -54,11 +57,38 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
     departamento: "General Ops",
   });
 
+  // Monto asignado que se imprime en el acta (por defecto, el de la caja menor) y versión regenerada
+  const [monto, setMonto] = useState(String(LIMITE_CAJA_MENOR));
+  const [generando, setGenerando] = useState(false);
+  const [errorPdf, setErrorPdf] = useState("");
+  const [pdfNuevo, setPdfNuevo] = useState<{ url: string; monto: number } | null>(null);
+  const pdfNuevoRef = useRef<string | null>(null);
+
+  function soltarPdfNuevo() {
+    if (pdfNuevoRef.current) URL.revokeObjectURL(pdfNuevoRef.current);
+    pdfNuevoRef.current = null;
+    setPdfNuevo(null);
+  }
+
   useEffect(() => {
     if (!open) {
       setEnviado(false);
+      soltarPdfNuevo();
+      setErrorPdf("");
+      setMonto(String(LIMITE_CAJA_MENOR));
     }
   }, [open]);
+
+  // Al cambiar de reporte se descarta la versión regenerada del anterior
+  const idActual = String(reporte?.ID_Reporte || reporte?.ID || "");
+  useEffect(() => {
+    soltarPdfNuevo();
+    setErrorPdf("");
+  }, [idActual]);
+
+  useEffect(() => () => {
+    if (pdfNuevoRef.current) URL.revokeObjectURL(pdfNuevoRef.current);
+  }, []);
 
   useEffect(() => {
     if (session?.user) {
@@ -88,11 +118,47 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
   }, [open, reporte]);
 
   const pdfUrl = String(reporte?.PDF_URL || "").trim();
-  const previewSrc = pdfUrl ? pdfPreviewUrl(pdfUrl) : "";
+  const hayPdf = Boolean(pdfNuevo || pdfUrl);
+  const previewSrc = pdfNuevo ? pdfNuevo.url : pdfUrl ? pdfPreviewUrl(pdfUrl) : "";
+  const montoNum = Number(monto.replace(/\D/g, "")) || 0;
   const fxUrl = useMemo(() => buildFxUrl(campos), [campos]);
   const reporteId = String(reporte?.ID_Reporte || reporte?.ID || "").trim();
 
   if (!reporte) return null;
+
+  /** Vuelve a generar el acta en el navegador con otro monto asignado (mismas facturas y firmas). */
+  const regenerarPdf = async () => {
+    if (!montoNum) {
+      setErrorPdf("Escribe un monto asignado válido.");
+      return;
+    }
+    setGenerando(true);
+    setErrorPdf("");
+    try {
+      const fila = reporte as unknown as Record<string, string>;
+      const creado = new Date(String(fila.Fecha_ISO || ""));
+      const { generarPdfLegalizacion } = await import("@/lib/legalizacion-pdf-client");
+      const blob = await generarPdfLegalizacion({
+        reporte: fila,
+        limite: montoNum,
+        firmaAdmin: String(fila.Firma_Admin || fila.FirmaAdmin || ""),
+        sectorPorDefecto: String(session?.user?.sector || "Bogota"),
+        // Se conserva la fecha del reporte, no la de hoy
+        fechaGeneracion: Number.isNaN(creado.getTime()) ? undefined : creado.toLocaleDateString("es-CO"),
+      });
+      soltarPdfNuevo();
+      const url = URL.createObjectURL(blob);
+      pdfNuevoRef.current = url;
+      setPdfNuevo({ url, monto: montoNum });
+    } catch (e) {
+      console.error("[form finance] no se pudo regenerar el PDF:", e);
+      setErrorPdf("No se pudo generar el acta de nuevo. Inténtalo otra vez.");
+    } finally {
+      setGenerando(false);
+    }
+  };
+
+  const nombreArchivo = `Legalizacion_${String(reporte.Coordinador || "reporte").trim().replace(/\s+/g, "_")}_${reporteId || "acta"}.pdf`;
 
   const handleAbrirFormulario = () => {
     window.open(fxUrl, "_blank", "noopener,noreferrer");
@@ -151,30 +217,64 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
             <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               PDF del reporte (ya firmado)
             </p>
-            {pdfUrl ? (
+            {hayPdf ? (
               <>
                 {/* Alto definido + iframe absoluto: no depende de porcentajes ni de flex, que Safari resuelve distinto */}
                 <div className="relative mb-3 h-[clamp(340px,52vh,480px)] min-h-[340px] w-full overflow-hidden rounded-xl border border-border bg-white lg:h-[clamp(380px,calc(94vh-440px),620px)] lg:min-h-[380px]">
-                  <iframe title="Vista previa PDF" src={previewSrc} className="absolute inset-0 h-full w-full border-0" />
-                </div>
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="min-w-0 flex-1 truncate rounded-lg bg-foreground/5 px-3 py-2 text-xs text-muted-foreground" title={pdfUrl}>
-                    {pdfUrl}
-                  </div>
-                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                    <Button size="sm" variant="outline" className="gap-2">
-                      <Download className="h-4 w-4" />
-                      Descargar PDF
-                    </Button>
-                  </a>
+                  <iframe
+                    key={previewSrc}
+                    title="Vista previa PDF"
+                    src={previewSrc}
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
                 </div>
               </>
             ) : (
-              <p className="text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
+              <p className="mb-3 text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
             )}
-            {pdfUrl ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                ¿No ves el acta aquí? Ábrela con «Descargar PDF»: algunos navegadores no muestran PDF dentro de la ventana.
+
+            <div className="flex min-w-0 flex-wrap items-end gap-2">
+              <div className="min-w-0">
+                <Label htmlFor="fx-monto" className="text-xs text-muted-foreground">
+                  Monto asignado en el acta
+                </Label>
+                <div className="relative mt-1">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                  <Input
+                    id="fx-monto"
+                    inputMode="numeric"
+                    value={montoNum ? montoNum.toLocaleString("es-CO") : ""}
+                    onChange={(e) => setMonto(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    className="w-40 border-border bg-foreground/5 pl-7 tabular-nums text-foreground"
+                    placeholder="3.000.000"
+                  />
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => void regenerarPdf()} disabled={generando || !montoNum} className="gap-2">
+                {generando ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                {generando ? "Generando…" : "Actualizar PDF"}
+              </Button>
+              {hayPdf ? (
+                <a
+                  href={pdfNuevo ? pdfNuevo.url : pdfUrl}
+                  {...(pdfNuevo ? { download: nombreArchivo } : { target: "_blank", rel: "noopener noreferrer" })}
+                  className="ml-auto shrink-0"
+                >
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Descargar PDF
+                  </Button>
+                </a>
+              ) : null}
+            </div>
+            {errorPdf ? <p className="mt-2 text-xs text-danger">{errorPdf}</p> : null}
+            {pdfNuevo ? (
+              <p className="mt-2 text-xs text-success">
+                ✓ Acta actualizada con monto asignado {formatCOP(pdfNuevo.monto)}. Descárgala para adjuntarla en el formulario.
+              </p>
+            ) : hayPdf ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                ¿El acta muestra otro monto asignado? Ajústalo y pulsa «Actualizar PDF»: se genera de nuevo con las mismas facturas y firmas. Esta versión se descarga desde aquí; no reemplaza la guardada. ¿No ves el acta? Ábrela con «Descargar PDF».
               </p>
             ) : null}
             <p className="mt-2 text-xs text-warning">
@@ -273,7 +373,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
               <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
                 Cancelar
               </Button>
-              <Button variant="outline" onClick={handleAbrirFormulario} disabled={!pdfUrl} className="gap-2">
+              <Button variant="outline" onClick={handleAbrirFormulario} disabled={!hayPdf} className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 Abrir Form Finance
               </Button>
