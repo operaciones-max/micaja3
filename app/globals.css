@@ -191,6 +191,9 @@
   }
   .glass:hover::after,
   .glass-strong:hover::after { opacity: 1; }
+  /* Tarjetas con listas largas: sin reflejo (pintaría un degradado enorme en cada movimiento del mouse) */
+  .glass[data-sin-brillo]::after,
+  .glass-strong[data-sin-brillo]::after { display: none; }
 
   /* Tarjeta que se eleva al pasar el cursor */
   .lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-2), inset 0 1px 0 var(--rim-a); }
@@ -278,6 +281,10 @@
     animation: shimmer 1.6s ease-in-out infinite;
   }
 }
+
+/* --mx/--my no se heredan: al mover el cursor solo se recalcula la tarjeta, no todo su contenido */
+@property --mx { syntax: "<length-percentage>"; inherits: false; initial-value: 50%; }
+@property --my { syntax: "<length-percentage>"; inherits: false; initial-value: 0%; }
 
 @keyframes bg-drift { to { transform: translate3d(44px, 30px, 0) scale(1.06); } }
 @keyframes rise {

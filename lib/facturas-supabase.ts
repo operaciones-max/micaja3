@@ -102,17 +102,25 @@ export function facturaDbToApi(r: FacturaDbRow): FacturaRow {
 
 export async function loadFacturas(): Promise<FacturaRow[]> {
   const PAGE = 1000;
+  // Páginas en paralelo por tandas de 4 (antes una tras otra: cada página sumaba su latencia de red).
+  // Se concatenan en orden; si una página viene incompleta, las siguientes están vacías.
+  const OLA = 4;
   const all: FacturaDbRow[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await getSupabase()
-      .from(TABLES.invoices)
-      .select(SELECT_COLUMNS)
-      .order("created_at", { ascending: true })
-      .range(from, from + PAGE - 1);
-    if (error) throw error;
-    const batch = (data ?? []) as FacturaDbRow[];
-    all.push(...batch);
-    if (batch.length < PAGE) break;
+  for (let ola = 0; ; ola++) {
+    const paginas = await Promise.all(
+      Array.from({ length: OLA }, async (_, i) => {
+        const from = (ola * OLA + i) * PAGE;
+        const { data, error } = await getSupabase()
+          .from(TABLES.invoices)
+          .select(SELECT_COLUMNS)
+          .order("created_at", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        return (data ?? []) as FacturaDbRow[];
+      })
+    );
+    for (const batch of paginas) all.push(...batch);
+    if (paginas.some((batch) => batch.length < PAGE)) break;
   }
   return all.map(facturaDbToApi);
 }

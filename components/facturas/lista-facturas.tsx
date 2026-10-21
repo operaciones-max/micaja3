@@ -77,6 +77,33 @@ export function FilasEsqueleto({ filas = 4 }: { filas?: number }) {
   );
 }
 
+/** Pie de la lista con el avance («Mostrando 40 de 3.009»); su `centinela` dispara la siguiente tanda. */
+export function PieLista({
+  mostradas,
+  total,
+  centinela,
+  onMas,
+}: {
+  mostradas: number;
+  total: number;
+  centinela: React.MutableRefObject<HTMLDivElement | null>;
+  onMas: () => void;
+}) {
+  if (mostradas >= total) return null;
+  return (
+    <div ref={centinela} className="flex items-center justify-center gap-3 py-4 text-xs text-muted-foreground">
+      Mostrando {mostradas} de {total}
+      <button
+        type="button"
+        onClick={onMas}
+        className="rounded-full border border-border px-3 py-1.5 font-medium text-foreground transition-colors hover:bg-foreground/10"
+      >
+        Mostrar más
+      </button>
+    </div>
+  );
+}
+
 export function SinFacturas({ children }: { children: React.ReactNode }) {
   return <p className="py-10 text-center text-sm text-muted-foreground">{children}</p>;
 }
@@ -106,7 +133,17 @@ export function FacturaFila({
   acciones?: React.ReactNode;
 }) {
   const [abierta, setAbierta] = useState(false);
+  // El detalle se crea la primera vez que se abre: oculto, sumaba ~30 elementos por fila a listas de miles
+  const [montado, setMontado] = useState(false);
   const idDetalle = useId();
+
+  function alternar() {
+    if (abierta) return setAbierta(false);
+    if (montado) return setAbierta(true);
+    setMontado(true);
+    // dos cuadros después, para que la transición parta de «cerrado»
+    requestAnimationFrame(() => requestAnimationFrame(() => setAbierta(true)));
+  }
 
   const proveedor = celda(f, "Proveedor", "Razon_Social") || "—";
   const responsable = celda(f, "Responsable");
@@ -156,7 +193,7 @@ export function FacturaFila({
           type="button"
           aria-expanded={abierta}
           aria-controls={idDetalle}
-          onClick={() => setAbierta((v) => !v)}
+          onClick={alternar}
           className="flex min-w-0 items-center gap-1.5 rounded-lg text-left outline-none [grid-area:main] focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <span className="truncate text-sm font-semibold text-foreground" title={proveedor}>
@@ -174,7 +211,7 @@ export function FacturaFila({
         <span
           className="cursor-pointer truncate text-xs text-muted-foreground [grid-area:meta]"
           title={meta}
-          onClick={() => setAbierta((v) => !v)}
+          onClick={alternar}
         >
           {meta}
         </span>
@@ -214,14 +251,16 @@ export function FacturaFila({
           )}
         >
           <div className="overflow-hidden">
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 pb-2 pt-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
-              {detalles.map(([k, v]) => (
-                <div key={k} className="min-w-0">
-                  <dt className="text-muted-foreground">{k}</dt>
-                  <dd className="break-words font-medium text-foreground">{v || "—"}</dd>
-                </div>
-              ))}
-            </dl>
+            {montado ? (
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 pb-2 pt-3 text-xs sm:grid-cols-3 lg:grid-cols-4">
+                {detalles.map(([k, v]) => (
+                  <div key={k} className="min-w-0">
+                    <dt className="text-muted-foreground">{k}</dt>
+                    <dd className="break-words font-medium text-foreground">{v || "—"}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
           </div>
         </div>
       </div>

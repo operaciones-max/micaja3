@@ -27,7 +27,8 @@ import { formatCOP, parseCOPString, parseSheetDate } from "@/lib/format";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { SIN_FILTRO } from "@/lib/filter-select";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
-import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, SinFacturas } from "@/components/facturas/lista-facturas";
+import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, PieLista, SinFacturas } from "@/components/facturas/lista-facturas";
+import { useRenderProgresivo } from "@/components/facturas/use-render-progresivo";
 
 type FacturaRow = Record<string, unknown>;
 
@@ -60,14 +61,15 @@ export function AdminFacturasClient() {
   const [confirmReabrir, setConfirmReabrir] = useState(false);
   const [avisoReabrir, setAvisoReabrir] = useState("");
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  /** `silencioso`: refresca los datos sin esqueleto (tras editar o reabrir). */
+  const load = useCallback(async ({ silencioso = false }: { silencioso?: boolean } = {}) => {
+    if (!silencioso) setLoading(true);
     try {
       const res = await fetch("/api/facturas");
       const json = await res.json().catch(() => ({ data: [] }));
       setFacturas(Array.isArray(json.data) ? json.data : []);
     } catch {
-      setFacturas([]);
+      if (!silencioso) setFacturas([]);
     } finally {
       setLoading(false);
     }
@@ -119,6 +121,11 @@ export function AdminFacturasClient() {
     });
   }, [facturas, filtroZona, filtroResponsable, filtroEstado, desde, hasta]);
 
+  const { visibles, centinela, verMas, reiniciar } = useRenderProgresivo(filtradas);
+  useEffect(() => {
+    reiniciar();
+  }, [filtroZona, filtroResponsable, filtroEstado, desde, hasta, reiniciar]);
+
   const totalAprobadas = useMemo(
     () =>
       filtradas.reduce((acc, f) => {
@@ -134,13 +141,24 @@ export function AdminFacturasClient() {
     [filtradas]
   );
 
+  const idDe = (f: FacturaRow) => String(getCellCaseInsensitive(f, "ID_Factura", "ID"));
+
+  /** Cambia el estado de una fila en pantalla sin volver a pedir todas las facturas al servidor. */
+  function parchearEstado(id: string, nuevo: string, motivo = "") {
+    setFacturas((prev) =>
+      prev.map((f) =>
+        idDe(f) === id ? { ...f, Estado: nuevo, Legalizado: nuevo, Verificado: nuevo, MotivoRechazo: motivo } : f
+      )
+    );
+  }
+
   async function aprobar(id: string) {
     const res = await fetch(`/api/facturas/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado: "Aprobada" }),
     });
-    if (res.ok) await load();
+    if (res.ok) parchearEstado(id, "Aprobada");
   }
 
   async function confirmarRechazo() {
@@ -151,15 +169,15 @@ export function AdminFacturasClient() {
       body: JSON.stringify({ estado: "Rechazada", motivoRechazo: motivoRechazo.trim() }),
     });
     if (res.ok) {
+      parchearEstado(rejectId, "Rechazada", motivoRechazo.trim());
       setRejectId(null);
       setMotivoRechazo("");
-      await load();
     }
   }
 
   async function eliminar(id: string) {
     const res = await fetch(`/api/facturas/${encodeURIComponent(id)}`, { method: "DELETE" });
-    if (res.ok) await load();
+    if (res.ok) setFacturas((prev) => prev.filter((f) => idDe(f) !== id));
   }
 
   function toggleSeleccionReabrir(id: string) {
@@ -218,7 +236,7 @@ export function AdminFacturasClient() {
           : `Reabiertas ${reabiertas} factura(s).`
       );
       setSeleccionReabrir(new Set());
-      await load();
+      await load({ silencioso: true });
     } catch (e) {
       setAvisoReabrir(e instanceof Error ? e.message : "Error al reabrir");
     } finally {
@@ -236,7 +254,7 @@ export function AdminFacturasClient() {
           setDialogOpen(o);
           if (!o) setEditar(null);
         }}
-        onSaved={() => void load()}
+        onSaved={() => void load({ silencioso: true })}
       />
       <FacturaImagenModal src={imagenModal} onClose={() => setImagenModal(null)} />
       {confirmEliminarId ? (
@@ -391,13 +409,13 @@ export function AdminFacturasClient() {
         </Card>
       )}
 
-      <Card className="text-foreground">
+      <Card data-sin-brillo className="text-foreground">
         <CardContent className="pt-6">
           {loading ? (
             <FilasEsqueleto />
           ) : filtradas.length ? (
             <ListaFacturas>
-              {filtradas.map((f, i) => {
+              {visibles.map((f, i) => {
                 const id = String(getCellCaseInsensitive(f, "ID_Factura", "ID"));
                 const est = facturaEstado(f).toLowerCase();
                 return (
@@ -451,6 +469,7 @@ export function AdminFacturasClient() {
           ) : (
             <SinFacturas>Sin resultados con los filtros actuales</SinFacturas>
           )}
+          {!loading ? <PieLista mostradas={visibles.length} total={filtradas.length} centinela={centinela} onMas={verMas} /> : null}
           <div className="mt-4 flex flex-wrap gap-6 text-sm text-bia-gray-light">
             <span>Total facturas (filtradas): {filtradas.length}</span>
             <span>Total aprobadas + completadas: {formatCOP(totalAprobadas)}</span>

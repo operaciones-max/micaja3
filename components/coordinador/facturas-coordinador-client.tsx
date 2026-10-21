@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,8 @@ import { BiaConfirm } from "@/components/ui/bia-confirm";
 import { SIN_FILTRO } from "@/lib/filter-select";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { Portal } from "@/components/shared/portal";
-import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, SinFacturas } from "@/components/facturas/lista-facturas";
+import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, PieLista, SinFacturas } from "@/components/facturas/lista-facturas";
+import { useRenderProgresivo } from "@/components/facturas/use-render-progresivo";
 
 type FacturaItem = Record<string, unknown>;
 
@@ -83,8 +84,16 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
   const [bulkMotivo, setBulkMotivo] = useState("");
   const [bulkLoading, setBulkLoading] = useState(false);
 
-  async function filtrar() {
-    setLoading(true);
+  const { visibles, centinela, verMas, reiniciar } = useRenderProgresivo(facturas);
+  // Estado con el que se pidió la lista (el desplegable puede haber cambiado sin pulsar «Filtrar»)
+  const estadoAplicado = useRef("");
+
+  /** `silencioso`: refresca los datos sin esqueleto ni volver al inicio de la lista (tras editar o acciones masivas). */
+  async function filtrar({ silencioso = false }: { silencioso?: boolean } = {}) {
+    if (!silencioso) {
+      setLoading(true);
+      reiniciar();
+    }
     try {
       const q = new URLSearchParams();
       if (!admin) q.set("zonaSector", sector);
@@ -94,13 +103,38 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
       if (estado && estado !== SIN_FILTRO) q.set("estado", estado);
       const res = await fetch(`/api/facturas?${q}`);
       const json = await res.json().catch(() => ({ data: [] }));
+      estadoAplicado.current = estado && estado !== SIN_FILTRO ? estado.toLowerCase() : "";
       setFacturas(Array.isArray(json.data) ? json.data : []);
-      setSelected(new Set());
+      if (!silencioso) setSelected(new Set());
     } catch {
-      setFacturas([]);
+      if (!silencioso) setFacturas([]);
     } finally {
       setLoading(false);
     }
+  }
+
+  const idDe = (f: FacturaItem) => String(getCellCaseInsensitive(f, "ID_Factura", "ID") || "");
+
+  function deseleccionar(id: string) {
+    setSelected((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+
+  /** Cambia el estado de una fila en pantalla sin volver a pedir miles de facturas al servidor. */
+  function parchearEstado(id: string, nuevo: string, motivo = "") {
+    setFacturas((prev) =>
+      prev.flatMap((f) => {
+        if (idDe(f) !== id) return [f];
+        // Con un filtro de estado activo, la fila que ya no coincide sale de la lista
+        if (estadoAplicado.current && estadoAplicado.current !== nuevo.toLowerCase()) return [];
+        return [{ ...f, Estado: nuevo, Legalizado: nuevo, Verificado: nuevo, MotivoRechazo: motivo }];
+      })
+    );
+    deseleccionar(id);
   }
 
   function toggleSelected(id: string) {
@@ -134,7 +168,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
         : `${j.actualizadas} facturas aprobadas`;
       setBiaAlert({ type: "success", message: msg });
       setSelected(new Set());
-      await filtrar();
+      await filtrar({ silencioso: true });
     } catch (e: unknown) {
       setBiaAlert({
         type: "error",
@@ -173,7 +207,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
       setBulkRechazoOpen(false);
       setBulkMotivo("");
       setSelected(new Set());
-      await filtrar();
+      await filtrar({ silencioso: true });
     } catch (e: unknown) {
       setBiaAlert({
         type: "error",
@@ -195,7 +229,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Error al aprobar");
       }
-      await filtrar();
+      parchearEstado(facturaId, "Aprobada");
     } catch (e: unknown) {
       setBiaAlert({
         type: "error",
@@ -225,9 +259,9 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Error al rechazar");
       }
+      parchearEstado(modalRechazo.id, "Rechazada", motivoRechazo.trim());
       setModalRechazo(null);
       setMotivoRechazo("");
-      await filtrar();
     } catch (e: unknown) {
       setBiaAlert({
         type: "error",
@@ -246,7 +280,8 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
         throw new Error((j as { error?: string }).error || "Error al eliminar");
       }
       setBiaAlert({ type: "success", message: "Factura eliminada" });
-      await filtrar();
+      setFacturas((prev) => prev.filter((f) => idDe(f) !== facturaId));
+      deseleccionar(facturaId);
     } catch (e: unknown) {
       setBiaAlert({
         type: "error",
@@ -281,7 +316,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
     : [];
 
   return (
-    <Card className="text-foreground">
+    <Card data-sin-brillo className="text-foreground">
       {confirmEliminarId ? (
         <BiaConfirm
           mensaje="¿Eliminar esta factura? Esta acción no se puede deshacer."
@@ -396,7 +431,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
           setDialogOpen(o);
           if (!o) setEditar(null);
         }}
-        onSaved={() => void filtrar()}
+        onSaved={() => void filtrar({ silencioso: true })}
       />
       <CardHeader>
         <CardTitle>Facturas de la zona</CardTitle>
@@ -445,7 +480,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
             </Select>
           </div>
           <div className="flex items-end">
-            <Button type="button" className="w-full bg-bia-aqua text-bia-blue font-semibold hover:bg-bia-blue-mid" onClick={filtrar} disabled={loading}>
+            <Button type="button" className="w-full bg-bia-aqua text-bia-blue font-semibold hover:bg-bia-blue-mid" onClick={() => void filtrar()} disabled={loading}>
               Filtrar
             </Button>
           </div>
@@ -514,7 +549,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
           <FilasEsqueleto />
         ) : facturas.length ? (
           <ListaFacturas>
-            {facturas.map((f, i) => {
+            {visibles.map((f, i) => {
               const responsableRow = String(getCellCaseInsensitive(f, "Responsable") || "");
               const esPropio = responsableRow === responsableSesion;
               const estLower = (
@@ -576,6 +611,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
         ) : (
           <SinFacturas>Sin resultados</SinFacturas>
         )}
+        {!loading ? <PieLista mostradas={visibles.length} total={facturas.length} centinela={centinela} onMas={verMas} /> : null}
         <p className="text-right text-sm text-bia-gray-light">Total facturas: {facturas.length}</p>
       </CardContent>
 

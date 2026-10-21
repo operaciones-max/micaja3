@@ -20,13 +20,7 @@ import { BiaAlert } from "@/components/ui/bia-alert";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
 import { limiteAprobacionZona } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString } from "@/lib/format";
-import {
-  extractIdsFromReporteFacturasCell,
-  facturaRowToFacturaPdfForLegalizacion,
-  parseFacturasJsonFromSheetCell,
-  parseFacturasPdfFromReporteCell,
-} from "@/lib/legalizacion-factura-pdf-map";
-import { getCellCaseInsensitive } from "@/lib/sheet-cell";
+import { facturasDelReporteLocal, generarPdfLegalizacion } from "@/lib/legalizacion-pdf-client";
 import { AuditorFacturasPanel, type PanelFactura } from "@/components/shared/auditor-facturas-panel";
 import { Portal } from "@/components/shared/portal";
 
@@ -59,87 +53,6 @@ function adjuntoVistaSrc(f: FacturaPdf): string | null {
   const id = f.driveFileId?.trim();
   if (id) return `https://drive.google.com/uc?id=${id}`;
   return null;
-}
-
-function urlParaProxyFactura(f: FacturaPdf): string | null {
-  const u = f.imagenUrl?.trim();
-  if (u?.startsWith("data:")) return null;
-  // Cualquier URL http(s) se baja por el proxy para poder recomprimirla antes
-  // de incrustarla en el PDF (Supabase, Drive, googleusercontent, etc.). El
-  // proxy valida el host permitido; si no lo permite, responde 403 y se
-  // conserva la imagen original tal cual.
-  if (u && (u.startsWith("http://") || u.startsWith("https://"))) return u;
-  const id = f.driveFileId?.trim();
-  if (id) return `https://drive.google.com/uc?id=${id}`;
-  return null;
-}
-
-/**
- * Recomprime una data URL para que el PDF final no exceda el límite de
- * Supabase Storage (~50 MB). Compresión moderada: se mantiene resolución
- * suficiente para leer el número de factura y el NIT (privilegiamos
- * resolución, que es lo que afecta al texto pequeño) y se baja sobre todo
- * la calidad JPEG (que afecta menos a la legibilidad del texto).
- */
-async function compressDataUrlImage(
-  dataUrl: string,
-  opts: { maxDim?: number; quality?: number } = {}
-): Promise<string> {
-  const maxDim = opts.maxDim ?? 2000;
-  const quality = opts.quality ?? 0.72;
-  if (!dataUrl.startsWith("data:image/")) return dataUrl;
-  // PDFs convertidos a imagen por el proxy ya vienen como image/*; los dejamos.
-  return new Promise<string>((resolve) => {
-    const img = new window.Image();
-    img.onload = () => {
-      try {
-        const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
-        const w = Math.max(1, Math.round(img.width * ratio));
-        const h = Math.max(1, Math.round(img.height * ratio));
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          resolve(dataUrl);
-          return;
-        }
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
-        const out = canvas.toDataURL("image/jpeg", quality);
-        resolve(out.length < dataUrl.length ? out : dataUrl);
-      } catch {
-        resolve(dataUrl);
-      }
-    };
-    img.onerror = () => resolve(dataUrl);
-    img.src = dataUrl;
-  });
-}
-
-async function resolveFacturaImages(facturas: FacturaPdf[]): Promise<FacturaPdf[]> {
-  return Promise.all(
-    facturas.map(async (f) => {
-      const target = urlParaProxyFactura(f);
-      let dataUrl = f.imagenUrl?.startsWith("data:image/") ? f.imagenUrl : "";
-      if (!dataUrl && target) {
-        try {
-          const res = await fetch(`/api/proxy-imagen-base64?url=${encodeURIComponent(target)}`);
-          if (res.ok) {
-            const j = (await res.json()) as { dataUrl?: string };
-            // Solo recomprimimos imágenes; si no lo es, se conserva f tal cual.
-            if (j.dataUrl?.startsWith("data:image/")) dataUrl = j.dataUrl;
-          }
-        } catch {
-          /* mantener f tal cual */
-        }
-      }
-      if (!dataUrl) return f;
-      const compressed = await compressDataUrlImage(dataUrl);
-      return { ...f, imagenUrl: compressed };
-    })
-  );
 }
 
 export function AdminReportesClient() {
@@ -182,18 +95,6 @@ export function AdminReportesClient() {
     void cargar();
   }, [cargar]);
 
-  function facturasDelReporteLocal(rep: ReporteRow): FacturaPdf[] {
-    const raw = String(rep.Facturas_IDs || rep.FacturasIds || "");
-    const parsed = parseFacturasPdfFromReporteCell(raw);
-    if (parsed?.length && typeof parsed[0] === "object") {
-      return parsed as FacturaPdf[];
-    }
-    const ids = new Set(extractIdsFromReporteFacturasCell(raw));
-    return facturas
-      .filter((f) => ids.has(String(getCellCaseInsensitive(f, "ID_Factura", "ID"))))
-      .map((f) => facturaRowToFacturaPdfForLegalizacion(f, { area: "—" }));
-  }
-
   function abrirReporte(reporte: ReporteRow) {
     setActivo(reporte);
     setFirmaAdmin("");
@@ -214,7 +115,7 @@ export function AdminReportesClient() {
     } catch {
       /* usar fallback */
     }
-    setFacturasReporte(facturasDelReporteLocal(reporte));
+    setFacturasReporte(facturasDelReporteLocal(reporte, facturas));
   }
 
   async function confirmarFirmaAdmin() {
@@ -225,92 +126,17 @@ export function AdminReportesClient() {
     let stage = "init";
     try {
       const sectorRep = String(activo.Sector || adminSector);
-      const limite = limiteAprobacionZona(sectorRep);
       const coordNombre = String(activo.Coordinador || "");
-      let coordCargo = "Field Ops Planner";
-      let coordCedula = "";
-      let coordArea = "";
-      try {
-        const uRes = await fetch(
-          `/api/usuarios?responsable=${encodeURIComponent(coordNombre.trim())}`
-        );
-        const uJson = (await uRes.json().catch(() => ({}))) as { data?: Record<string, unknown>[] };
-        const uRow = Array.isArray(uJson.data) ? uJson.data[0] : undefined;
-        if (uRow) {
-          coordCargo = String(getCellCaseInsensitive(uRow, "Cargo") || coordCargo);
-          coordCedula = String(getCellCaseInsensitive(uRow, "Cedula", "Cédula", "Documento") || "");
-          coordArea = String(getCellCaseInsensitive(uRow, "Area", "Área") || "");
-        }
-      } catch {
-        /* defaults */
-      }
-      const firmaCoord = String(activo.Firma_Coordinador || activo.FirmaCoordinador || "");
-      const generadoTxt = new Date().toLocaleDateString("es-CO");
-
-      const rawFacturas = String(activo.Facturas_IDs || activo.FacturasIds || "[]").trim();
-
-      let facturasPdf: FacturaPdf[] = [];
-
-      try {
-        const parsedUnknown = parseFacturasJsonFromSheetCell(rawFacturas || "[]");
-        if (parsedUnknown === null || !Array.isArray(parsedUnknown) || parsedUnknown.length === 0) {
-          facturasPdf = facturasDelReporteLocal(activo);
-        } else if (typeof parsedUnknown[0] === "string") {
-          const responses = await Promise.all(
-            (parsedUnknown as string[]).map((id) =>
-              fetch(`/api/facturas/${encodeURIComponent(id)}`)
-                .then((r) => r.json())
-                .catch(() => null)
-            )
-          );
-          const rows = responses
-            .map((r) =>
-              r && typeof r === "object" && r !== null && "data" in r
-                ? (r as { data: FacturaRow }).data
-                : null
-            )
-            .filter(Boolean) as FacturaRow[];
-          facturasPdf = rows.map((f) => facturaRowToFacturaPdfForLegalizacion(f, { area: "—" }));
-          if (facturasPdf.length === 0) facturasPdf = facturasDelReporteLocal(activo);
-        } else if (typeof parsedUnknown[0] === "object" && parsedUnknown[0] !== null) {
-          facturasPdf = (parsedUnknown as FacturaRow[]).map((row) =>
-            facturaRowToFacturaPdfForLegalizacion(row, { area: "—" })
-          );
-        } else {
-          facturasPdf = facturasDelReporteLocal(activo);
-        }
-      } catch (e) {
-        console.error("[admin firma] Error parseando facturas:", e);
-        facturasPdf = facturasDelReporteLocal(activo);
-      }
-
-      stage = "resolviendo imágenes";
-      const facturasConImagenes = await resolveFacturaImages(facturasPdf);
-
-      stage = "cargando módulo PDF";
-      const [{ pdf }, { LegalizacionPdf }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("@/components/pdf/legalizacion-pdf"),
-      ]);
-
-      stage = "renderizando PDF";
-      const doc = (
-        <LegalizacionPdf
-          coordinador={{
-            responsable: coordNombre,
-            cargo: coordCargo,
-            cedula: coordCedula,
-            sector: sectorRep,
-            area: coordArea,
-          }}
-          facturas={facturasConImagenes}
-          firmaCoordinador={firmaCoord}
-          firmaAdmin={firmaAdmin}
-          fechaGeneracion={generadoTxt}
-          limiteZona={limite}
-        />
-      );
-      const blob = await pdf(doc).toBlob();
+      const blob = await generarPdfLegalizacion({
+        reporte: activo,
+        limite: limiteAprobacionZona(sectorRep),
+        firmaAdmin,
+        sectorPorDefecto: adminSector,
+        facturasLocales: facturas,
+        onEtapa: (etapa) => {
+          stage = etapa;
+        },
+      });
 
       stage = "obteniendo URL de subida";
       const idRep = reporteId(activo);
