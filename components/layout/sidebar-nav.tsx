@@ -6,48 +6,37 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import type { Session } from "next-auth";
-import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Send,
-  BarChart3,
-  ClipboardList,
-  Home,
-  Package,
-  Receipt,
-  Scale,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
+import { NavIcon, type NavIconName } from "./nav-icons";
 import { Logo } from "@/components/shared/logo";
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+type NavItem = { href: string; label: string; icon: NavIconName };
 
 function navByRole(rol: string): NavItem[] {
   if (rol === "admin") {
     return [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/admin/reportes", label: "Reportes", icon: ClipboardList },
-      { href: "/admin/facturas", label: "Facturas", icon: FileText },
-      { href: "/gastos", label: "Gastos Generales", icon: Receipt },
-      { href: "/admin/usuarios", label: "Usuarios", icon: Users },
+      { href: "/admin", label: "Dashboard", icon: "dashboard" },
+      { href: "/admin/reportes", label: "Reportes", icon: "reportes" },
+      { href: "/admin/facturas", label: "Facturas", icon: "facturas" },
+      { href: "/gastos", label: "Gastos Generales", icon: "gastos" },
+      { href: "/admin/usuarios", label: "Usuarios", icon: "usuarios" },
     ];
   }
   if (rol === "coordinador") {
     return [
-      { href: "/", label: "Mi Zona", icon: Users },
-      { href: "/envios", label: "Envíos", icon: Send },
-      { href: "/facturas", label: "Facturas", icon: FileText },
-      { href: "/reporte", label: "Reporte", icon: BarChart3 },
-      { href: "/gastos", label: "Gastos Generales", icon: Receipt },
-      { href: "/usuarios-zona", label: "Usuarios", icon: Users },
-      { href: "/legalizaciones", label: "Legalizaciones", icon: Scale },
+      { href: "/", label: "Mi Zona", icon: "zona" },
+      { href: "/envios", label: "Envíos", icon: "envios" },
+      { href: "/facturas", label: "Facturas", icon: "facturas" },
+      { href: "/reporte", label: "Reporte", icon: "reporte" },
+      { href: "/gastos", label: "Gastos Generales", icon: "gastos" },
+      { href: "/usuarios-zona", label: "Usuarios", icon: "usuarios" },
+      { href: "/legalizaciones", label: "Legalizaciones", icon: "legalizaciones" },
     ];
   }
   return [
-    { href: "/mi-cuenta", label: "Mi Cuenta", icon: Home },
-    { href: "/facturas", label: "Facturas", icon: FileText },
-    { href: "/entregas", label: "Entregas", icon: Package },
+    { href: "/mi-cuenta", label: "Mi Cuenta", icon: "inicio" },
+    { href: "/facturas", label: "Facturas", icon: "facturas" },
+    { href: "/entregas", label: "Entregas", icon: "entregas" },
   ];
 }
 
@@ -108,7 +97,6 @@ export function SidebarNav({
           }}
         />
         {items.map((item) => {
-          const Icon = item.icon;
           const active =
             item.href === "/admin"
               ? pathname === "/admin"
@@ -119,18 +107,13 @@ export function SidebarNav({
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group/nav relative z-10 mx-3 flex min-h-[44px] items-center gap-3 rounded-full px-4 py-3 text-sm transition-colors duration-300",
+                "nav-hover relative z-10 mx-3 flex min-h-[44px] items-center gap-3 rounded-full px-4 py-3 text-sm transition-colors duration-300",
                 active
                   ? "font-semibold text-foreground"
                   : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
               )}
             >
-              <Icon
-                className={cn(
-                  "h-5 w-5 shrink-0 transition-transform duration-500 ease-[var(--spring)]",
-                  active ? "scale-110" : "group-hover/nav:scale-110"
-                )}
-              />
+              <NavIcon name={item.icon} />
               {item.label}
             </Link>
           );

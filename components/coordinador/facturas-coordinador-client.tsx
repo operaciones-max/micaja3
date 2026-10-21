@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Badge } from "@/components/ui/badge";
+import { Check, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -24,22 +23,11 @@ import { FacturaImagenModal } from "@/components/factura-imagen-modal";
 import { BiaAlert } from "@/components/ui/bia-alert";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
 import { SIN_FILTRO } from "@/lib/filter-select";
-import { formatCOP, formatDateDDMMYYYY, parseCOPString } from "@/lib/format";
-import { facturaImageUrlForDisplay } from "@/lib/drive-image-url";
-import { sheetANombreBiaTrue } from "@/lib/nueva-factura-validation";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { Portal } from "@/components/shared/portal";
+import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, SinFacturas } from "@/components/facturas/lista-facturas";
 
 type FacturaItem = Record<string, unknown>;
-
-function estadoClass(estado: string): string {
-  const e = estado.toLowerCase();
-  if (e === "aprobada") return "border-success/40 text-success";
-  if (e === "rechazada") return "border-danger/40 text-danger";
-  return "border-warning/40 text-warning";
-}
-
-const COLS = 14;
 
 export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
   const { data } = useSession();
@@ -446,7 +434,7 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
             <Label>Estado</Label>
             <Select value={estado || SIN_FILTRO} onValueChange={(v) => setEstado(v || SIN_FILTRO)}>
               <SelectTrigger className="bg-bia-blue border-bia-gray/40">
-                <SelectValue />
+                <SelectValue placeholder="Todas" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={SIN_FILTRO}>Todas</SelectItem>
@@ -504,203 +492,90 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
           </div>
         ) : null}
 
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {puedeHacerBulk ? (
-                  <TableHead className="w-10">
-                    <Checkbox
-                      checked={
-                        eligibleIds.length > 0 &&
-                        eligibleIds.every((id) => selected.has(id))
-                      }
-                      disabled={eligibleIds.length === 0}
-                      onCheckedChange={(c) => {
-                        setSelected((prev) => {
-                          const next = new Set(prev);
-                          if (c) eligibleIds.forEach((id) => next.add(id));
-                          else eligibleIds.forEach((id) => next.delete(id));
-                          return next;
-                        });
-                      }}
-                    />
-                  </TableHead>
-                ) : null}
-                <TableHead>Fecha</TableHead>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Proveedor</TableHead>
-                <TableHead>NIT</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Ciudad</TableHead>
-                <TableHead>Servicio</TableHead>
-                <TableHead>OPS</TableHead>
-                <TableHead>BIA</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-center">Imagen</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={puedeHacerBulk ? COLS : COLS - 1}>
-                    <div className="h-6 animate-pulse rounded bg-bia-blue-mid" />
-                  </TableCell>
-                </TableRow>
-              ) : facturas.length ? (
-                facturas.map((f, i) => {
-                  const responsableRow = String(getCellCaseInsensitive(f, "Responsable") || "");
-                  const esPropio = responsableRow === responsableSesion;
-                  const est =
-                    getCellCaseInsensitive(f, "Estado", "Legalizado", "Verificado") || "Pendiente";
-                  const estLower = est.toLowerCase();
-                  const observacionCoord = getCellCaseInsensitive(f, "Observacion", "Concepto");
-                  const esAutoAprobada =
-                    String(observacionCoord || "").includes("[AUTO]") && estLower === "aprobada";
-                  const fid = String(getCellCaseInsensitive(f, "ID_Factura", "ID") || "");
-                  const puedeAprobarRechazar =
-                    (rolSesion === "coordinador" || rolSesion === "admin") && estLower === "pendiente";
-                  const puedeEditar =
-                    estLower !== "completada" &&
-                    (estLower === "pendiente" || estLower === "rechazada") &&
-                    (rolSesion === "admin" || rolSesion === "coordinador" || esPropio);
-                  const puedeEliminar = rolSesion === "coordinador" || rolSesion === "admin";
-                  const aBia = sheetANombreBiaTrue(
-                    getCellCaseInsensitive(f, "ANombreBia", "AnombreBia", "NombreBia", "Nombre_bia")
-                  );
-                  const imgSrc = facturaImageUrlForDisplay(
-                    String(getCellCaseInsensitive(f, "Adjuntar_Factura") || ""),
-                    String(getCellCaseInsensitive(f, "URL", "ImagenURL") || ""),
-                    String(getCellCaseInsensitive(f, "DriveFileId") || "")
-                  );
-                  return (
-                    <TableRow key={i}>
-                      {puedeHacerBulk ? (
-                        <TableCell className="w-10">
-                          {puedeAprobarRechazar && fid ? (
-                            <Checkbox
-                              checked={selected.has(fid)}
-                              onCheckedChange={() => toggleSelected(fid)}
-                            />
-                          ) : null}
-                        </TableCell>
+        {puedeHacerBulk && eligibleIds.length > 0 ? (
+          <label className="flex w-fit cursor-pointer items-center gap-2 px-2 text-xs text-muted-foreground">
+            <Checkbox
+              checked={eligibleIds.every((id) => selected.has(id))}
+              onCheckedChange={(c) => {
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  if (c) eligibleIds.forEach((id) => next.add(id));
+                  else eligibleIds.forEach((id) => next.delete(id));
+                  return next;
+                });
+              }}
+              aria-label="Seleccionar todas las pendientes"
+            />
+            Seleccionar pendientes ({eligibleIds.length})
+          </label>
+        ) : null}
+
+        {loading ? (
+          <FilasEsqueleto />
+        ) : facturas.length ? (
+          <ListaFacturas>
+            {facturas.map((f, i) => {
+              const responsableRow = String(getCellCaseInsensitive(f, "Responsable") || "");
+              const esPropio = responsableRow === responsableSesion;
+              const estLower = (
+                getCellCaseInsensitive(f, "Estado", "Legalizado", "Verificado") || "Pendiente"
+              ).toLowerCase();
+              const fid = String(getCellCaseInsensitive(f, "ID_Factura", "ID") || "");
+              const puedeAprobarRechazar =
+                (rolSesion === "coordinador" || rolSesion === "admin") && estLower === "pendiente";
+              const puedeEditar =
+                estLower !== "completada" &&
+                (estLower === "pendiente" || estLower === "rechazada") &&
+                (rolSesion === "admin" || rolSesion === "coordinador" || esPropio);
+              const puedeEliminar = rolSesion === "coordinador" || rolSesion === "admin";
+              return (
+                <FacturaFila
+                  key={fid || i}
+                  f={f}
+                  indice={i}
+                  mostrarResponsable
+                  conSeleccion={puedeHacerBulk}
+                  seleccion={
+                    puedeAprobarRechazar && fid
+                      ? {
+                          checked: selected.has(fid),
+                          onToggle: () => toggleSelected(fid),
+                          label: `Seleccionar factura de ${responsableRow}`,
+                        }
+                      : undefined
+                  }
+                  onVerImagen={setImagenModal}
+                  acciones={
+                    <>
+                      {puedeAprobarRechazar && fid ? (
+                        <>
+                          <AccionIcono tono="ok" label="Aprobar" onClick={() => void handleAprobar(fid)}>
+                            <Check />
+                          </AccionIcono>
+                          <AccionIcono tono="peligro" label="Rechazar" onClick={() => abrirRechazo(fid)}>
+                            <X />
+                          </AccionIcono>
+                        </>
                       ) : null}
-                      <TableCell className="whitespace-nowrap">
-                        {formatDateDDMMYYYY(getCellCaseInsensitive(f, "Fecha", "Fecha_Factura"))}
-                      </TableCell>
-                      <TableCell>{getCellCaseInsensitive(f, "Responsable")}</TableCell>
-                      <TableCell>{getCellCaseInsensitive(f, "Proveedor", "Razon_Social") || "-"}</TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {getCellCaseInsensitive(f, "NIT", "Nit_Factura") || "—"}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        {formatCOP(parseCOPString(getCellCaseInsensitive(f, "Valor", "Monto_Factura")))}
-                      </TableCell>
-                      <TableCell>{getCellCaseInsensitive(f, "Ciudad") || "—"}</TableCell>
-                      <TableCell>
-                        {getCellCaseInsensitive(f, "ServicioDeclarado", "Tipo_servicio") || "—"}
-                      </TableCell>
-                      <TableCell className="max-w-[140px] truncate" title={getCellCaseInsensitive(f, "OPS", "TipoOperacion")}>
-                        {getCellCaseInsensitive(f, "OPS", "TipoOperacion") || "—"}
-                      </TableCell>
-                      <TableCell>
-                        {aBia ? (
-                          <Badge className="border-success/40 bg-success/15 text-success">BIA</Badge>
-                        ) : (
-                          <span className="text-bia-gray">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>{getCellCaseInsensitive(f, "TipoFactura", "Tipo_Factura") || "-"}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col items-start gap-1">
-                          {esAutoAprobada ? (
-                            <span className="rounded-full border border-foreground/15 bg-foreground/10 px-2 py-0.5 text-xs text-foreground">
-                              ✓ Auto-aprobada
-                            </span>
-                          ) : null}
-                          <Badge variant="outline" className={estadoClass(est)}>
-                            {est}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {imgSrc ? (
-                          <button
-                            type="button"
-                            onClick={() => setImagenModal(imgSrc)}
-                            className="rounded border border-bia-aqua/30 px-2 py-1 text-xs text-bia-aqua transition-colors hover:bg-bia-aqua/10 hover:text-foreground"
-                            title="Ver imagen"
-                          >
-                            🖼️ Ver
-                          </button>
-                        ) : (
-                          <span className="text-xs text-bia-gray" title="Sin imagen disponible">
-                            Sin imagen
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex flex-wrap justify-end gap-1">
-                          {puedeAprobarRechazar && fid ? (
-                            <>
-                              <Button
-                                type="button"
-                                size="sm"
-                                className="h-7 bg-emerald-700 px-2 text-xs text-white hover:bg-emerald-600"
-                                onClick={() => void handleAprobar(fid)}
-                              >
-                                ✓ Aprobar
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="destructive"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => abrirRechazo(fid)}
-                              >
-                                ✗ Rechazar
-                              </Button>
-                            </>
-                          ) : null}
-                          {puedeEditar && fid ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-7 border-bia-gray/30 px-2 text-xs"
-                              onClick={() => handleEditar(f)}
-                            >
-                              ✏️ Editar
-                            </Button>
-                          ) : null}
-                          {puedeEliminar && fid ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="h-7 border-danger/40 px-2 text-xs text-danger hover:bg-danger/15"
-                              onClick={() => setConfirmEliminarId(fid)}
-                            >
-                              🗑️ Eliminar
-                            </Button>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={COLS} className="text-bia-gray">
-                    Sin resultados
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                      {puedeEditar && fid ? (
+                        <AccionIcono label="Editar" onClick={() => handleEditar(f)}>
+                          <Pencil />
+                        </AccionIcono>
+                      ) : null}
+                      {puedeEliminar && fid ? (
+                        <AccionIcono tono="suave" label="Eliminar" onClick={() => setConfirmEliminarId(fid)}>
+                          <Trash2 />
+                        </AccionIcono>
+                      ) : null}
+                    </>
+                  }
+                />
+              );
+            })}
+          </ListaFacturas>
+        ) : (
+          <SinFacturas>Sin resultados</SinFacturas>
+        )}
         <p className="text-right text-sm text-bia-gray-light">Total facturas: {facturas.length}</p>
       </CardContent>
 

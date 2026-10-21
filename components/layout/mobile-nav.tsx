@@ -4,24 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { Session } from "next-auth";
-import { LayoutDashboard, FileText, Package, Send, MoreHorizontal, FileBarChart2 } from "lucide-react";
+import { NavIcon, type NavIconName } from "./nav-icons";
 
-const SHORT_USER: { href: string; label: string; icon: typeof LayoutDashboard }[] = [
-  { href: "/mi-cuenta", label: "Inicio", icon: LayoutDashboard },
-  { href: "/facturas", label: "Facturas", icon: FileText },
-  { href: "/entregas", label: "Entregas", icon: Package },
+const SHORT_USER: { href: string; label: string; icon: NavIconName }[] = [
+  { href: "/mi-cuenta", label: "Inicio", icon: "inicio" },
+  { href: "/facturas", label: "Facturas", icon: "facturas" },
+  { href: "/entregas", label: "Entregas", icon: "entregas" },
 ];
 
-const SHORT_COORD: { href: string; label: string; icon: typeof LayoutDashboard }[] = [
-  { href: "/", label: "Zona", icon: LayoutDashboard },
-  { href: "/facturas", label: "Facturas", icon: FileText },
-  { href: "/envios", label: "Envíos", icon: Send },
+const SHORT_COORD: { href: string; label: string; icon: NavIconName }[] = [
+  { href: "/", label: "Zona", icon: "zona" },
+  { href: "/facturas", label: "Facturas", icon: "facturas" },
+  { href: "/envios", label: "Envíos", icon: "envios" },
 ];
 
-const SHORT_ADMIN: { href: string; label: string; icon: typeof LayoutDashboard }[] = [
-  { href: "/admin", label: "Inicio", icon: LayoutDashboard },
-  { href: "/admin/facturas", label: "Facturas", icon: FileText },
-  { href: "/admin/reportes", label: "Reportes", icon: FileBarChart2 },
+const SHORT_ADMIN: { href: string; label: string; icon: NavIconName }[] = [
+  { href: "/admin", label: "Inicio", icon: "dashboard" },
+  { href: "/admin/facturas", label: "Facturas", icon: "facturas" },
+  { href: "/admin/reportes", label: "Reportes", icon: "reportes" },
 ];
 
 function allowedRoutesByRole(rol: string): string[] {
@@ -45,7 +45,7 @@ export function MobileBottomNav({ session }: { session: Session }) {
         {
           href: rol === "admin" ? "/admin" : rol === "coordinador" ? "/" : "/mi-cuenta",
           label: "Inicio",
-          icon: LayoutDashboard,
+          icon: "inicio" as NavIconName,
         },
       ];
   const moreHref =
@@ -79,7 +79,7 @@ export function MobileBottomNav({ session }: { session: Session }) {
             transform: `translateX(${Math.max(activeIdx, 0) * 100}%)`,
           }}
         />
-        {shortTabs.map(({ href, label, icon: Icon }, i) => {
+        {shortTabs.map(({ href, label, icon }, i) => {
           const active = i === activeIdx;
           return (
             <Link
@@ -87,15 +87,13 @@ export function MobileBottomNav({ session }: { session: Session }) {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "relative z-10 flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-full py-1.5 text-[10px] font-semibold transition-colors duration-300",
+                "nav-active relative z-10 flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-full py-1.5 text-[10px] font-semibold transition-colors duration-300",
                 active ? "text-foreground" : "text-muted-foreground"
               )}
             >
-              <Icon
-                className={cn(
-                  "h-[22px] w-[22px] transition-transform duration-[550ms] ease-[var(--spring)]",
-                  active && "-translate-y-px scale-110"
-                )}
+              <NavIcon
+                name={icon}
+                className={cn("transition-transform duration-[550ms] ease-[var(--spring)]", active && "-translate-y-px")}
               />
               {label}
             </Link>
@@ -103,9 +101,9 @@ export function MobileBottomNav({ session }: { session: Session }) {
         })}
         <Link
           href={moreHref === pathname ? (rol === "admin" ? "/admin" : "/") : moreHref}
-          className="relative z-10 flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-full py-1.5 text-[10px] font-semibold text-muted-foreground"
+          className="nav-hover relative z-10 flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-full py-1.5 text-[10px] font-semibold text-muted-foreground"
         >
-          <MoreHorizontal className="h-[22px] w-[22px]" />
+          <NavIcon name="mas" />
           Más
         </Link>
       </div>
