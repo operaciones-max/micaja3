@@ -124,6 +124,9 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
     }
   };
 
+  const campo = "mt-1 border-border bg-foreground/5 text-foreground";
+  const campoFijo = "mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60";
+
   return (
     <Dialog
       open={open}
@@ -131,10 +134,10 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
         if (!next) onClose();
       }}
     >
-      <DialogContent className="max-h-[95dvh] w-[96vw] max-w-5xl overflow-y-auto border border-border bg-popover text-foreground p-4 sm:p-6 text-[15px]">
+      <DialogContent className="max-h-[94dvh] w-[96vw] max-w-6xl overflow-y-auto p-4 text-[15px] text-foreground sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
-            <FileText className="h-5 w-5 shrink-0 text-cyan-400" />
+          <DialogTitle className="flex items-center gap-2 pr-8 text-lg font-semibold">
+            <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
             Form Finance — Legalización
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
@@ -142,147 +145,133 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
           </p>
         </DialogHeader>
 
-        <div className="rounded-lg border border-border bg-foreground/5 p-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            PDF del reporte (ya firmado)
-          </p>
-          {pdfUrl ? (
-            <>
-              <div className="mb-3 h-[min(38vh,340px)] min-h-[160px] w-full overflow-hidden rounded-md border border-border bg-black/30">
-                <iframe
-                  title="Vista previa PDF"
-                  src={previewSrc}
-                  className="h-full w-full border-0"
-                />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+          {/* Izquierda: el PDF firmado, a todo lo alto */}
+          <section className="flex min-w-0 flex-col rounded-2xl border border-border bg-foreground/5 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              PDF del reporte (ya firmado)
+            </p>
+            {pdfUrl ? (
+              <>
+                <div className="mb-3 h-[min(48vh,460px)] min-h-[240px] w-full overflow-hidden rounded-xl border border-border bg-black/20 lg:h-auto lg:min-h-[440px] lg:flex-1">
+                  <iframe title="Vista previa PDF" src={previewSrc} className="h-full w-full border-0" />
+                </div>
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="min-w-0 flex-1 truncate rounded-lg bg-foreground/5 px-3 py-2 text-xs text-muted-foreground" title={pdfUrl}>
+                    {pdfUrl}
+                  </div>
+                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Descargar PDF
+                    </Button>
+                  </a>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
+            )}
+            <p className="mt-3 text-xs text-warning">
+              ⚠️ Descarga el PDF antes de abrir el formulario; se adjunta manualmente en Google Forms.
+            </p>
+          </section>
+
+          {/* Derecha: datos del formulario y pasos */}
+          <div className="flex min-w-0 flex-col gap-4">
+            <section className="rounded-2xl border border-border bg-foreground/5 p-4">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Datos del formulario FX (editables)
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Empresa</Label>
+                  <Input
+                    value={campos.empresa}
+                    onChange={(e) => setCampos((p) => ({ ...p, empresa: e.target.value }))}
+                    className={campo}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Nombres y apellidos</Label>
+                  <Input
+                    value={campos.nombres}
+                    onChange={(e) => setCampos((p) => ({ ...p, nombres: e.target.value }))}
+                    className={campo}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">No. identificación (cédula)</Label>
+                  <Input
+                    value={campos.identificacion}
+                    onChange={(e) => setCampos((p) => ({ ...p, identificacion: e.target.value }))}
+                    className={campo}
+                    placeholder="Sin cédula en perfil — ingresar"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Cargo</Label>
+                  <Input
+                    value={campos.cargo}
+                    onChange={(e) => setCampos((p) => ({ ...p, cargo: e.target.value }))}
+                    className={campo}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Correo corporativo</Label>
+                  <Input
+                    value={campos.correo}
+                    onChange={(e) => setCampos((p) => ({ ...p, correo: e.target.value }))}
+                    className={campo}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Tipo de solicitud</Label>
+                  <Input value={campos.tipoSolicitud} readOnly className={campoFijo} />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Departamento origen del costo/gasto</Label>
+                  <Input value={campos.departamento} readOnly className={campoFijo} />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Breve descripción</Label>
+                  <Input value={campos.descripcion} readOnly className={campoFijo} />
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 truncate rounded bg-foreground/5 p-2 text-xs text-muted-foreground">{pdfUrl}</div>
-                <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-                  <Button size="sm" variant="outline" className="gap-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10">
-                    <Download className="h-4 w-4" />
-                    Descargar PDF
-                  </Button>
-                </a>
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
-          )}
-          <p className="mt-2 text-xs text-warning">
-            ⚠️ Descarga el PDF antes de abrir el formulario; se adjunta manualmente en Google Forms.
-          </p>
-        </div>
+            </section>
 
-        <div className="rounded-lg border border-border bg-foreground/5 p-4">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Datos del formulario FX (editables)
-          </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-            <div className="col-span-2">
-              <Label className="text-xs text-muted-foreground">Empresa</Label>
-              <Input
-                value={campos.empresa}
-                onChange={(e) => setCampos((p) => ({ ...p, empresa: e.target.value }))}
-                className="mt-1 border-border bg-foreground/5 text-foreground"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Nombres y apellidos</Label>
-              <Input
-                value={campos.nombres}
-                onChange={(e) => setCampos((p) => ({ ...p, nombres: e.target.value }))}
-                className="mt-1 border-border bg-foreground/5 text-foreground"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">No. identificación (cédula)</Label>
-              <Input
-                value={campos.identificacion}
-                onChange={(e) => setCampos((p) => ({ ...p, identificacion: e.target.value }))}
-                className="mt-1 border-border bg-foreground/5 text-foreground"
-                placeholder="Sin cédula en perfil — ingresar"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Cargo</Label>
-              <Input
-                value={campos.cargo}
-                onChange={(e) => setCampos((p) => ({ ...p, cargo: e.target.value }))}
-                className="mt-1 border-border bg-foreground/5 text-foreground"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Correo corporativo</Label>
-              <Input
-                value={campos.correo}
-                onChange={(e) => setCampos((p) => ({ ...p, correo: e.target.value }))}
-                className="mt-1 border-border bg-foreground/5 text-foreground"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Tipo de solicitud</Label>
-              <Input
-                value={campos.tipoSolicitud}
-                readOnly
-                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
-              />
-            </div>
-
-            <div>
-              <Label className="text-xs text-muted-foreground">Breve descripción</Label>
-              <Input
-                value={campos.descripcion}
-                readOnly
-                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label className="text-xs text-muted-foreground">Departamento origen del costo/gasto</Label>
-              <Input
-                value={campos.departamento}
-                readOnly
-                className="mt-1 cursor-not-allowed border-border bg-foreground/5 text-foreground/60"
-              />
-            </div>
+            <section className="rounded-2xl border border-border bg-foreground/5 p-4 text-sm">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Pasos para enviar
+              </p>
+              <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground marker:font-semibold marker:text-foreground">
+                <li>Descarga el PDF firmado</li>
+                <li>Haz clic en Abrir Form Finance (campos de texto prellenados)</li>
+                <li>Adjunta el PDF descargado</li>
+                <li>Envía el formulario en Google Forms</li>
+                <li>Regresa y marca como Enviado</li>
+              </ol>
+            </section>
           </div>
         </div>
 
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-warning">
-          <p className="mb-1 font-semibold">Pasos para enviar:</p>
-          <ol className="list-inside list-decimal space-y-1 text-xs text-warning">
-            <li>Descarga el PDF firmado</li>
-            <li>Haz clic en Abrir Google Form (campos de texto prellenados)</li>
-            <li>Adjunta el PDF descargado</li>
-            <li>Envía el formulario en Google Forms</li>
-            <li>Regresa y marca como Enviado</li>
-          </ol>
-        </div>
-
-        <DialogFooter className="flex flex-wrap gap-2 pt-2">
+        <DialogFooter className="flex flex-wrap gap-2 sm:-mx-6 sm:-mb-6 sm:px-6">
           {!enviado ? (
             <>
               <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
                 Cancelar
               </Button>
-              <Button
-                onClick={handleAbrirFormulario}
-                disabled={!pdfUrl}
-                className="gap-2 bg-blue-600 hover:bg-blue-700"
-              >
+              <Button variant="outline" onClick={handleAbrirFormulario} disabled={!pdfUrl} className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 Abrir Form Finance
               </Button>
-              <Button
-                onClick={handleMarcarEnviado}
-                disabled={loading}
-                className="gap-2 bg-emerald-600 hover:bg-emerald-700"
-              >
+              <Button onClick={handleMarcarEnviado} disabled={loading} className="gap-2">
                 <CheckCircle2 className="h-4 w-4" />
                 {loading ? "Guardando..." : "Marcar como Enviado"}
               </Button>
