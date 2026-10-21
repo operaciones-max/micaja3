@@ -13,7 +13,7 @@ export function PointerGlow() {
 
     const onMove = (e: PointerEvent) => {
       if (e.pointerType === "touch") return;
-      const target = (e.target as HTMLElement | null)?.closest?.(".glass, .glass-strong") as HTMLElement | null;
+      const target = (e.target as HTMLElement | null)?.closest?.(".glass:not([data-sin-brillo]), .glass-strong:not([data-sin-brillo])") as HTMLElement | null;
       if (!target) return;
       el = target;
       x = e.clientX;

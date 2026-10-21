@@ -13,7 +13,8 @@ import { FacturaEditDialog } from "@/components/coordinador/factura-edit-dialog"
 import { FacturaImagenModal } from "@/components/factura-imagen-modal";
 import { getCellCaseInsensitive } from "@/lib/sheet-cell";
 import { Portal } from "@/components/shared/portal";
-import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, SinFacturas } from "@/components/facturas/lista-facturas";
+import { AccionIcono, FacturaFila, FilasEsqueleto, ListaFacturas, PieLista, SinFacturas } from "@/components/facturas/lista-facturas";
+import { useRenderProgresivo } from "@/components/facturas/use-render-progresivo";
 
 type FacturaItem = Record<string, unknown>;
 
@@ -64,6 +65,11 @@ export function FacturasUsuarioClient() {
     return [...facturas].sort((a, b) => key(b) - key(a));
   }, [facturas]);
 
+  const { visibles, centinela, verMas, reiniciar } = useRenderProgresivo(facturasOrdenadas);
+  useEffect(() => {
+    reiniciar();
+  }, [desde, hasta, reiniciar]);
+
   const bannerGuardado = useMemo(() => {
     if (typeof window === "undefined") return null;
     const qs = new URLSearchParams(window.location.search);
@@ -92,7 +98,7 @@ export function FacturasUsuarioClient() {
         }}
         onSaved={() => void loadFacturas()}
       />
-      <Card className="text-foreground">
+      <Card data-sin-brillo className="text-foreground">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Facturas</CardTitle>
           {bannerGuardado ? (
@@ -139,7 +145,7 @@ export function FacturasUsuarioClient() {
             <FilasEsqueleto />
           ) : facturasOrdenadas.length ? (
             <ListaFacturas>
-              {facturasOrdenadas.map((f, i) => {
+              {visibles.map((f, i) => {
                 const fid = String(getCellCaseInsensitive(f, "ID_Factura", "ID") || "");
                 return (
                   <FacturaFila
@@ -167,6 +173,7 @@ export function FacturasUsuarioClient() {
           ) : (
             <SinFacturas>No hay facturas registradas</SinFacturas>
           )}
+          {!loading ? <PieLista mostradas={visibles.length} total={facturasOrdenadas.length} centinela={centinela} onMas={verMas} /> : null}
         </CardContent>
       </Card>
 
