@@ -153,8 +153,9 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
             </p>
             {pdfUrl ? (
               <>
-                <div className="mb-3 h-[min(48vh,460px)] min-h-[240px] w-full overflow-hidden rounded-xl border border-border bg-black/20 lg:h-auto lg:min-h-[440px] lg:flex-1">
-                  <iframe title="Vista previa PDF" src={previewSrc} className="h-full w-full border-0" />
+                {/* Alto definido + iframe absoluto: no depende de porcentajes ni de flex, que Safari resuelve distinto */}
+                <div className="relative mb-3 h-[clamp(340px,52vh,480px)] min-h-[340px] w-full overflow-hidden rounded-xl border border-border bg-white lg:h-[clamp(380px,calc(94vh-440px),620px)] lg:min-h-[380px]">
+                  <iframe title="Vista previa PDF" src={previewSrc} className="absolute inset-0 h-full w-full border-0" />
                 </div>
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="min-w-0 flex-1 truncate rounded-lg bg-foreground/5 px-3 py-2 text-xs text-muted-foreground" title={pdfUrl}>
@@ -171,7 +172,12 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
             ) : (
               <p className="text-sm text-danger">⚠️ No se encontró PDF para este reporte.</p>
             )}
-            <p className="mt-3 text-xs text-warning">
+            {pdfUrl ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                ¿No ves el acta aquí? Ábrela con «Descargar PDF»: algunos navegadores no muestran PDF dentro de la ventana.
+              </p>
+            ) : null}
+            <p className="mt-2 text-xs text-warning">
               ⚠️ Descarga el PDF antes de abrir el formulario; se adjunta manualmente en Google Forms.
             </p>
           </section>
@@ -261,7 +267,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
           </div>
         </div>
 
-        <DialogFooter className="flex flex-wrap gap-2 sm:-mx-6 sm:-mb-6 sm:px-6">
+        <DialogFooter className="sticky -bottom-4 z-10 flex flex-wrap gap-2 bg-popover sm:-bottom-6 sm:-mx-6 sm:-mb-6 sm:px-6">
           {!enviado ? (
             <>
               <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
