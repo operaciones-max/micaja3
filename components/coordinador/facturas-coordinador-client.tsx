@@ -301,6 +301,8 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
   }, [admin, sector]);
 
   const rolSesion = String(data?.user?.rol || "user").toLowerCase();
+  // Edita cualquier factura, en cualquier estado (se calcula en el servidor y llega en la sesión)
+  const editaTodo = Boolean(data?.user?.editaTodo);
   const responsableSesion = String(data?.user?.responsable || "");
   const puedeHacerBulk = rolSesion === "coordinador" || rolSesion === "admin";
   const eligibleIds: string[] = puedeHacerBulk
@@ -559,9 +561,10 @@ export function FacturasCoordinadorClient({ admin }: { admin?: boolean }) {
               const puedeAprobarRechazar =
                 (rolSesion === "coordinador" || rolSesion === "admin") && estLower === "pendiente";
               const puedeEditar =
-                estLower !== "completada" &&
-                (estLower === "pendiente" || estLower === "rechazada") &&
-                (rolSesion === "admin" || rolSesion === "coordinador" || esPropio);
+                editaTodo ||
+                (estLower !== "completada" &&
+                  (estLower === "pendiente" || estLower === "rechazada") &&
+                  (rolSesion === "admin" || rolSesion === "coordinador" || esPropio));
               const puedeEliminar = rolSesion === "coordinador" || rolSesion === "admin";
               return (
                 <FacturaFila

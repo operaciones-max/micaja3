@@ -29,6 +29,23 @@ export function esCoordinadorMultizona(email?: string | null): boolean {
     .some((x) => x.trim().toLowerCase() === e);
 }
 
+/**
+ * Coordinadores que pueden editar cualquier factura: de cualquier responsable y en cualquier
+ * estado (también las aprobadas y las completadas). El resto sigue con las reglas de siempre.
+ * Se puede ampliar con COORDINADORES_EDICION_TOTAL (correos separados por coma).
+ */
+const EDICION_TOTAL_POR_DEFECTO = ["dinovi.sanchez@bia.app"];
+
+export function puedeEditarCualquierFactura(u: { email?: string | null; rol?: string | null }): boolean {
+  if (String(u.rol ?? "").toLowerCase() !== "coordinador") return false;
+  const e = String(u.email ?? "").trim().toLowerCase();
+  if (!e) return false;
+  if (EDICION_TOTAL_POR_DEFECTO.includes(e)) return true;
+  return String(process.env.COORDINADORES_EDICION_TOTAL ?? "")
+    .split(/[,;\s]+/)
+    .some((x) => x.trim().toLowerCase() === e);
+}
+
 type PersonaZona = { email?: string | null; rol?: string | null; sector?: string | null };
 
 /**
