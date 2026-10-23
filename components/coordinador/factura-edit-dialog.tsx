@@ -130,6 +130,11 @@ export function FacturaEditDialog({
         <DialogHeader>
           <DialogTitle>Editar factura</DialogTitle>
         </DialogHeader>
+        {factura && getCellCaseInsensitive(factura, "Estado", "Legalizado", "Verificado").toLowerCase() === "completada" ? (
+          <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
+            Esta factura ya está legalizada en un reporte: los cambios no actualizan el acta ya generada.
+          </p>
+        ) : null}
         <div className="grid gap-3 py-2">
           <div className="space-y-1">
             <Label>Fecha (DD/MM/YYYY)</Label>

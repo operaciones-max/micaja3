@@ -21,7 +21,7 @@ import {
 } from "@/lib/nueva-factura-validation";
 import { findFacturaDuplicadaPorNitNumResponsable } from "@/lib/factura-duplicada-micaja";
 import { responsablesEnZonaSheetSet } from "@/lib/usuarios-sheet";
-import { zonaDeOperacion } from "@/lib/coordinador-zona";
+import { puedeEditarCualquierFactura, zonaDeOperacion } from "@/lib/coordinador-zona";
 import { appPublicBaseUrl, escHtml, notificarUsuario } from "@/lib/notificaciones";
 import type { FacturaRow } from "@/types/models";
 
@@ -81,12 +81,15 @@ async function puedeEditarContenido(
     user?: {
       rol?: string;
       sector?: string;
+      email?: string | null;
       responsable?: string | null;
       name?: string | null;
     };
   },
   row: FacturaRow
 ): Promise<boolean> {
+  // Coordinadores con edición total (Dinovi): cualquier factura, en cualquier estado y de cualquier responsable
+  if (puedeEditarCualquierFactura({ email: session.user?.email, rol: session.user?.rol })) return true;
   if (!estadoEdicionPermitido(row)) return false;
   const rol = String(session.user?.rol || "user").toLowerCase();
   if (rol === "admin") return true;

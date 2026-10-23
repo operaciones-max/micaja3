@@ -23,6 +23,8 @@ declare module "next-auth" {
       telefono?: string;
       /** Zona sobre la que opera: "Todas" (admin y coordinadores multizona) o su sector. */
       zona?: string;
+      /** Puede editar cualquier factura (cualquier responsable y estado). */
+      editaTodo?: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -38,5 +40,6 @@ declare module "next-auth/jwt" {
     telefono?: string;
     email?: string;
     zona?: string;
+    editaTodo?: boolean;
   }
 }

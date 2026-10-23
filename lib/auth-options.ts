@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { isBiaAppEmail, normalizeEmailForAuth } from "@/lib/email-normalize";
 import { getUsuariosFromSheet } from "@/lib/usuarios-sheet";
-import { zonaDeOperacion } from "@/lib/coordinador-zona";
+import { puedeEditarCualquierFactura, zonaDeOperacion } from "@/lib/coordinador-zona";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
       // Zona sobre la que opera (Todas para admin y coordinadores multizona). Se recalcula en cada acceso
       // para que sesiones ya abiertas reflejen cambios sin volver a iniciar sesión.
       token.zona = zonaDeOperacion({ email: token.email, rol: token.rol, sector: token.sector });
+      token.editaTodo = puedeEditarCualquierFactura({ email: token.email, rol: token.rol });
       return token;
     },
     async session({ session, token }) {
@@ -83,6 +84,7 @@ export const authOptions: NextAuthOptions = {
         session.user.cedula = token.cedula as string;
         session.user.telefono = token.telefono as string;
         session.user.zona = token.zona as string;
+        session.user.editaTodo = Boolean(token.editaTodo);
       }
       return session;
     },
