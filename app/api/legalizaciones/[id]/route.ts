@@ -5,6 +5,7 @@ import { applyFacturaEstadoById } from "@/lib/factura-estado-server";
 import { extractIdsFromReporteFacturasCell } from "@/lib/legalizacion-factura-pdf-map";
 import { formatCOP, parseCOPString } from "@/lib/format";
 import {
+  actualizarPdfLegalizacion,
   deleteLegalizacion,
   findLegalizacionByReporteId,
   firmarLegalizacionAdmin,
@@ -28,6 +29,7 @@ export async function PATCH(
       firmaAdmin?: string;
       pdfUrl?: string;
       estado?: string;
+      regenerarPdf?: boolean;
     };
     const estadoPatch = String(body.estado || "").trim();
 
@@ -57,6 +59,31 @@ export async function PATCH(
         { error: "Solo el administrador puede firmar el reporte" },
         { status: 403 }
       );
+    }
+
+    // Regenerar el PDF de un reporte ya firmado: solo cambia el archivo guardado
+    if (body.regenerarPdf === true) {
+      const nuevoPdf = String(body.pdfUrl || "").trim();
+      let esStorage = false;
+      try {
+        esStorage = new URL(nuevoPdf).pathname.includes("/storage/v1/object/public/");
+      } catch {
+        /* URL inválida */
+      }
+      if (!esStorage) {
+        return NextResponse.json({ error: "pdfUrl no válido" }, { status: 400 });
+      }
+      const actual = await findLegalizacionByReporteId(reportId);
+      if (!actual) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+      const estadoActual = (actual.status ?? "").trim();
+      if (estadoActual !== "Firmado" && estadoActual !== "Enviado FX") {
+        return NextResponse.json(
+          { error: "Solo se puede regenerar el PDF de un reporte ya firmado" },
+          { status: 400 }
+        );
+      }
+      await actualizarPdfLegalizacion(reportId, nuevoPdf);
+      return NextResponse.json({ ok: true });
     }
 
     const firmaAdmin = String(body.firmaAdmin || "").trim().slice(0, 45000);

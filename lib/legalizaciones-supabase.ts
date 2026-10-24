@@ -152,6 +152,17 @@ export async function firmarLegalizacionAdmin(
   return data?.length ?? 0;
 }
 
+/** Reemplaza solo el PDF guardado del reporte (no cambia firma, estado ni avisa a nadie). */
+export async function actualizarPdfLegalizacion(idReporte: string, pdfUrl: string): Promise<number> {
+  const { data, error } = await getSupabase()
+    .from(TABLES.expenseReports)
+    .update({ report_url: pdfUrl, updated_at: new Date().toISOString() })
+    .eq("report_id", idReporte)
+    .select("id");
+  if (error) throw error;
+  return data?.length ?? 0;
+}
+
 export async function deleteLegalizacion(idReporte: string): Promise<boolean> {
   const { data, error } = await getSupabase()
     .from(TABLES.expenseReports)
