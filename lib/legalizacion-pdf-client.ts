@@ -210,3 +210,46 @@ export async function generarPdfLegalizacion({
   // LegalizacionPdf devuelve un <Document>; createElement no lo sabe, de ahí el cast
   return pdf(doc as unknown as Parameters<typeof pdf>[0]).toBlob();
 }
+
+/**
+ * Sube el PDF a Storage con una URL firmada que entrega el servidor (solo administrador) y devuelve
+ * la URL pública. Lanza un error con el paso en que falló.
+ */
+export async function subirPdfLegalizacion({
+  blob,
+  sector,
+  responsable,
+  onEtapa,
+}: {
+  blob: Blob;
+  sector: string;
+  responsable: string;
+  onEtapa?: (etapa: string) => void;
+}): Promise<string> {
+  onEtapa?.("obteniendo URL de subida");
+  const urlRes = await fetch("/api/facturas/upload-reporte-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sector, responsable: responsable || "admin" }),
+  });
+  const urlJson = (await urlRes.json().catch(() => ({}))) as {
+    signedUrl?: string;
+    publicUrl?: string;
+    error?: string;
+  };
+  if (!urlRes.ok || !urlJson.signedUrl || !urlJson.publicUrl) {
+    throw new Error(String(urlJson.error || `URL fallo HTTP ${urlRes.status}`));
+  }
+
+  onEtapa?.("subiendo PDF a Storage");
+  const putRes = await fetch(urlJson.signedUrl, {
+    method: "PUT",
+    headers: { "Content-Type": "application/pdf" },
+    body: blob,
+  });
+  if (!putRes.ok) {
+    const txt = await putRes.text().catch(() => "");
+    throw new Error(`Storage upload fallo HTTP ${putRes.status} ${txt}`.trim());
+  }
+  return urlJson.publicUrl;
+}

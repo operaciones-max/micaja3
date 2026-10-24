@@ -274,7 +274,7 @@ export default function EnviarFxModal({ reporte, open, onClose, onSuccess }: Env
               </p>
             ) : hayPdf ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                ¿El acta muestra otro monto asignado? Ajústalo y pulsa «Actualizar PDF»: se genera de nuevo con las mismas facturas y firmas. Esta versión se descarga desde aquí; no reemplaza la guardada. ¿No ves el acta? Ábrela con «Descargar PDF».
+                ¿El acta muestra otro monto asignado o el logo anterior? Ajusta el monto y pulsa «Actualizar PDF»: se genera de nuevo con el logo actual y las mismas facturas y firmas. Esta versión se descarga desde aquí; no reemplaza la guardada. ¿No ves el acta? Ábrela con «Descargar PDF».
               </p>
             ) : null}
             <p className="mt-2 text-xs text-warning">
