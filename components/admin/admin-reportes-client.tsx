@@ -20,7 +20,7 @@ import { BiaAlert } from "@/components/ui/bia-alert";
 import { BiaConfirm } from "@/components/ui/bia-confirm";
 import { limiteAprobacionZona } from "@/lib/coordinador-zona";
 import { formatCOP, parseCOPString } from "@/lib/format";
-import { facturasDelReporteLocal, generarPdfLegalizacion } from "@/lib/legalizacion-pdf-client";
+import { facturasDelReporteLocal, generarPdfLegalizacion, subirPdfLegalizacion } from "@/lib/legalizacion-pdf-client";
 import { AuditorFacturasPanel, type PanelFactura } from "@/components/shared/auditor-facturas-panel";
 import { Portal } from "@/components/shared/portal";
 
@@ -68,6 +68,8 @@ export function AdminReportesClient() {
   const [firmaAdmin, setFirmaAdmin] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [errorRegen, setErrorRegen] = useState("");
+  const [regenerandoId, setRegenerandoId] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
   const [confirmEliminarId, setConfirmEliminarId] = useState<string | null>(null);
   const [resumenIA, setResumenIA] = useState("");
@@ -138,37 +140,15 @@ export function AdminReportesClient() {
         },
       });
 
-      stage = "obteniendo URL de subida";
       const idRep = reporteId(activo);
-      const sectorUpload = isMicajaSector(sectorRep) ? sectorRep : adminSector;
-      const urlRes = await fetch("/api/facturas/upload-reporte-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sector: sectorUpload,
-          responsable: coordNombre || "admin",
-        }),
+      const url = await subirPdfLegalizacion({
+        blob,
+        sector: isMicajaSector(sectorRep) ? sectorRep : adminSector,
+        responsable: coordNombre,
+        onEtapa: (etapa) => {
+          stage = etapa;
+        },
       });
-      const urlJson = (await urlRes.json().catch(() => ({}))) as {
-        signedUrl?: string;
-        publicUrl?: string;
-        error?: string;
-      };
-      if (!urlRes.ok || !urlJson.signedUrl || !urlJson.publicUrl) {
-        throw new Error(String(urlJson.error || `URL fallo HTTP ${urlRes.status}`));
-      }
-
-      stage = "subiendo PDF a Storage";
-      const putRes = await fetch(urlJson.signedUrl, {
-        method: "PUT",
-        headers: { "Content-Type": "application/pdf" },
-        body: blob,
-      });
-      if (!putRes.ok) {
-        const txt = await putRes.text().catch(() => "");
-        throw new Error(`Storage upload fallo HTTP ${putRes.status} ${txt}`.trim());
-      }
-      const url = urlJson.publicUrl;
 
       stage = "guardando firma";
       const patchRes = await fetch(`/api/legalizaciones/${encodeURIComponent(idRep)}`, {
@@ -205,6 +185,62 @@ export function AdminReportesClient() {
     }
   }
 
+  /**
+   * Vuelve a generar el PDF de un reporte ya firmado con el logo y el monto asignado actuales
+   * (mismas facturas y firmas) y reemplaza el archivo guardado. Para actas hechas con una versión anterior.
+   */
+  async function regenerarPdfGuardado(r: ReporteRow) {
+    const id = reporteId(r);
+    if (!id || regenerandoId) return;
+    setRegenerandoId(id);
+    setErrorRegen("");
+    setSuccessMsg("");
+    let stage = "init";
+    try {
+      const sectorRep = String(r.Sector || adminSector);
+      const creado = new Date(String(r.Fecha_ISO || ""));
+      const firma = String(r.Firma_Admin || r.FirmaAdmin || "");
+      if (!firma) throw new Error("el reporte no tiene la firma del administrador");
+      const blob = await generarPdfLegalizacion({
+        reporte: r,
+        limite: limiteAprobacionZona(sectorRep),
+        firmaAdmin: firma,
+        sectorPorDefecto: adminSector,
+        facturasLocales: facturas,
+        // Se conserva la fecha del reporte, no la de hoy
+        fechaGeneracion: Number.isNaN(creado.getTime()) ? undefined : creado.toLocaleDateString("es-CO"),
+        onEtapa: (etapa) => {
+          stage = etapa;
+        },
+      });
+      const url = await subirPdfLegalizacion({
+        blob,
+        sector: isMicajaSector(sectorRep) ? sectorRep : adminSector,
+        responsable: String(r.Coordinador || ""),
+        onEtapa: (etapa) => {
+          stage = etapa;
+        },
+      });
+      stage = "guardando el PDF";
+      const res = await fetch(`/api/legalizaciones/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ regenerarPdf: true, pdfUrl: url }),
+      });
+      if (!res.ok) {
+        const pj = await res.json().catch(() => ({}));
+        throw new Error(String(pj.error || `HTTP ${res.status}`));
+      }
+      await cargar();
+      setSuccessMsg("PDF regenerado con el logo y el monto asignado actuales");
+    } catch (e: unknown) {
+      console.error(`[regenerar pdf] error en "${stage}":`, e);
+      setErrorRegen(`No se pudo regenerar el PDF (falló en "${stage}"): ${e instanceof Error ? e.message : "sin detalle"}`);
+    } finally {
+      setRegenerandoId(null);
+    }
+  }
+
   async function eliminarReporteConfirmado(id: string) {
     if (!id) return;
     try {
@@ -235,6 +271,7 @@ export function AdminReportesClient() {
         />
       ) : null}
       {successMsg ? <BiaAlert type="success" message={successMsg} /> : null}
+      {errorRegen ? <BiaAlert type="error" message={errorRegen} /> : null}
       <Card className="text-foreground">
         <CardHeader>
           <CardTitle>Reportes de legalización</CardTitle>
@@ -285,6 +322,19 @@ export function AdminReportesClient() {
                           {est === "Pendiente Admin" ? (
                             <Button type="button" size="sm" variant="secondary" onClick={() => abrirReporte(r)}>
                               ✍️ Revisar y firmar
+                            </Button>
+                          ) : null}
+                          {est === "Firmado" || est === "Enviado FX" ? (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="border-bia-gray/30"
+                              disabled={regenerandoId !== null}
+                              title="Vuelve a generar el PDF con el logo y el monto asignado actuales (mismas facturas y firmas)"
+                              onClick={() => void regenerarPdfGuardado(r)}
+                            >
+                              {regenerandoId === id ? "Generando…" : "↻ Regenerar PDF"}
                             </Button>
                           ) : null}
                           {pdfUrl ? (
